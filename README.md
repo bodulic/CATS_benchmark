@@ -52,39 +52,39 @@ The pipeline was run on a high-performance computing cluster using SUSE Linux En
 
 # Script overview
 
-| **Script**                      | **Purpose**                                                        |        
-|---------------------------------|--------------------------------------------------------------------|
-| `CATS_benchmark.bash`           | Master script for the analysis                                     |
-| `simulate_reads.R`              | Performs RNA-seq library simulation                                |
-| `get_f_scores_from_crb_table.R` | Calculated transcript F-scores from CRB-BLAST results              |
-| `simulate_insertion.R`          | Simulates insertions in transcript sequences                       |
-| `simulate_mismatch.R`           | Simulates mismatches in transcript sequences                       |
-| `simulate_deletion.R`           | Simulates deletions in transcript sequences                        |
-| `simulate_redundancy.R`         | Simulates redundancy in transcript sequences                       |
-| `simulate_fragmentation.R`      | Simulates fragmentation in transcript sequences                    |
-| `simulate_chimerism.R`          | Simulates chimerism in transcript sequences                        |
-| `filter_by_blat`                | Filters public transcripts by blat F-scores                        |
-| `merge_cats_rf_results.R`       | Merges all CATS-rf results for Figure 2                            |
-| `generate_fig2_elements.R`      | Generates all subplots contained in Figure 2 and Supp. Figure 1    |
-| `generate_fig2_elements.R`      | Generates all subplots contained in Figure 3                       |
-| `merge_cats_rb_results.R`       | Merges all CATS-rb results for Figure 5                            |
-| `generate_fig5_elements.R`      | Generates all subplots contained in Figure 5 and Supp. Figures 2-6 |
-| `generate_fig_s7.R`             | Generates Supplementary Figure 7                                   |
+| **Script**                      | **Purpose**                                           |        
+|---------------------------------|-------------------------------------------------------|
+| `CATS_benchmark.bash`           | Master script for the analysis                        |
+| `simulate_reads.R`              | Performs RNA-seq library simulation                   |
+| `get_f_scores_from_crb_table.R` | Calculated transcript F-scores from CRB-BLAST results |
+| `simulate_insertion.R`          | Simulates insertions in transcript sequences          |
+| `simulate_mismatch.R`           | Simulates mismatches in transcript sequences          |
+| `simulate_deletion.R`           | Simulates deletions in transcript sequences           |
+| `simulate_redundancy.R`         | Simulates redundancy in transcript sequences          |
+| `simulate_fragmentation.R`      | Simulates fragmentation in transcript sequences       |
+| `simulate_chimerism.R`          | Simulates chimerism in transcript sequences           |
+| `filter_by_blat`                | Filters public transcripts by blat F-scores           |
+| `merge_cats_rf_results.R`       | Merges all CATS-rf results for Figure 2               |
+| `generate_fig2_elements.R`      | Generates all Figure 2 subplots and Supp. Figure 1    |
+| `generate_fig2_elements.R`      | Generates all subplots contained in Figure 3          |
+| `merge_cats_rb_results.R`       | Merges all CATS-rb results for Figure 5               |
+| `generate_fig5_elements.R`      | Generates all Figure 5 subplots and Supp. Figures 2-6 |
+| `generate_fig_s7.R`             | Generates Supp. Figure 7                              |
 
 For convinience, tables containing benchmark results used in figure generation are provided:
 
-| **Table**                                              | **Figure**                | **Download link**                                                                                                                  | 
-|--------------------------------------------------------|---------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `merged_simulated_transcript_scores_for_figure2.tsv`   | Figure 2 (a–e)            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_simulated_transcript_scores_for_figure2.tsv)               |
-| `merged_simulated_assembly_scores_for_figure2.tsv`     | Figure 2f                 | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_simulated_assembly_scores_for_figure2.tsv)                 |
-| `merged_public_transcript_scores_for_figure2.tsv`      | Figure 2g, Supp. Fig. 1   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_public_transcript_scores_for_figure2.tsv)                  |
-| `mutation_analysis_CATS_rf_transcript_scores.tsv`      | Figure 3                  | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/mutation_analysis_CATS_rf_transcript_scores_for_figure3.tsv)      |
-| `merged_cats_rb_simulated_assembly_scores.tsv`         | Figure 5 (a–c,e,f)        | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_assembly_scores_for_figure5.tsv)         |
-| `merged_cats_rb_public_assembly_scores.tsv`            | Figure 5d                 | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_public_assembly_scores_for_figure5.tsv)            |
-| `simulated_assembly_cats_rf_f_scores.tsv`              | Figure 5 (a–c,e,f)        | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/simulated_assembly_cats_rf_f_scores_for_figure5.tsv)              |
-| `merged_cats_rb_simulated_mutated_scores.tsv`          | Figure 5g                 | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv) |
-| `chimeric_ref_transcriptome_names.tsv`                 | Supp. Figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_figure_s7)                   |
-| `str_inconsistent_transcripts.tsv`                     | Supp. Figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_s7)                       |
+| **Table**                                              | **Figure**                | **Download link**                                                                                                                     | 
+|--------------------------------------------------------|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `merged_simulated_transcript_scores_for_figure2.tsv`   | Figure 2 (a–e)            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_simulated_transcript_scores_for_figure2.tsv.gz)               |
+| `merged_simulated_assembly_scores_for_figure2.tsv`     | Figure 2f                 | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_simulated_assembly_scores_for_figure2.tsv.gz)                 |
+| `merged_public_transcript_scores_for_figure2.tsv`      | Figure 2g, Supp. Fig. 1   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_public_transcript_scores_for_figure2.tsv.gz)                  |
+| `mutation_analysis_CATS_rf_transcript_scores.tsv`      | Figure 3                  | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/mutation_analysis_CATS_rf_transcript_scores_for_figure3.tsv.gz)      |
+| `merged_cats_rb_simulated_assembly_scores.tsv`         | Figure 5 (a–c,e,f)        | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_assembly_scores_for_figure5.tsv.gz)         |
+| `merged_cats_rb_public_assembly_scores.tsv`            | Figure 5d                 | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_public_assembly_scores_for_figure5.tsv.gz)            |
+| `simulated_assembly_cats_rf_f_scores.tsv`              | Figure 5 (e,f)            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/simulated_assembly_cats_rf_f_scores_for_figure5.tsv.gz)              |
+| `merged_cats_rb_simulated_mutated_scores.tsv`          | Figure 5g                 | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv.gz) |
+| `chimeric_ref_transcriptome_names.tsv`                 | Supp. Figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_figure_s7.gz)                   |
+| `str_inconsistent_transcripts.tsv`                     | Supp. Figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_s7.gz)                       |
 
 Tables should be unzipped before being directly supplied to the correpsonding R scripts.
 

@@ -27,9 +27,9 @@ The following dependencies were used in the pipeline:
 | IDBA-tran        | 1.1.1       |
 | SOAPdenovo-Trans | 1.04        |
 | CATS-rf          | 1.0.0       |
-| RSEM-EVAL        | 1.0.4       |
+| RSEM-EVAL        | 1.11        |
 | Ruby             | 2.6.6p146   |
-| TramsRate        | 1.11        |
+| TramsRate        | 1.04        |
 | BLASTn           | 2.2.29      |
 | CRB-BLAST        | 1.0.0       |
 | data.table (R)   | 1.16.4      |
@@ -37,7 +37,7 @@ The following dependencies were used in the pipeline:
 | SRA toolkit      | 3.2.0       |
 | Python           | 3.10.6      |
 | cutadapt         | 4.6         |
-| TrimGalore       | 0.6.10      |
+| TrimGalore       | 0.6.1       |
 | kallisto         | 0.50.1      |
 | pblat            | 2.5.1       |
 | ggplot2 (R)      | 3.5.1       | 

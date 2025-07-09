@@ -1,6 +1,6 @@
-# CATS Bemchmrk
+# CATS Benchmark
 
-This repository contains the scripts used in the analyses presented in the paper: “Comprehensive Transcriptome Quality Assessment Using CATS: Reference-free and Reference-based Approaches” (Bodulić & Vlahoviček, 2025). More information can be found in the [preprint](x).
+This repository contains the scripts used in the analyses presented in the paper: “Comprehensive Transcriptome Quality Assessment Using CATS: Reference-free and Reference-based Approaches” (Bodulić & Vlahoviček, 2025). More information can be found in the [preprint](x) (coming soon).
 
 # General Information
 
@@ -29,7 +29,7 @@ The following dependencies were used in the pipeline:
 | CATS-rf          | 1.0.0       |
 | RSEM-EVAL        | 1.11        |
 | Ruby             | 2.6.6p146   |
-| TramsRate        | 1.04        |
+| TransRate        | 1.04        |
 | BLASTn           | 2.2.29      |
 | CRB-BLAST        | 1.0.0       |
 | data.table (R)   | 1.16.4      |
@@ -43,14 +43,16 @@ The following dependencies were used in the pipeline:
 | ggplot2 (R)      | 3.5.1       | 
 | ggsci (R)        | 3.2.0       |
 | ggcorrplot (R)   | 0.1.4.1     |
-| ggbiplot (R)     | 0.6.2       |
 | cowplot (R)      | 1.1.3       |
+| ggbiplot (R)     | 0.6.2       |
 
-The stated dependencies should be included in `PATH` variable before running the script. Tools denoted with (R) correspond to R packages. Version information for dependencies specific to CATS-rf and CATS-rb can be found in the README files of their respective repositories.
+The stated dependencies should be included in the `PATH` enviroment variable before running the script. Tools denoted with (R) correspond to R packages. Version information for dependencies specific to CATS-rf and CATS-rb can be found in the README files of their respective repositories.
 
 The pipeline was run on a high-performance computing cluster using SUSE Linux Enterprise High Performance Computing 15 SP4 (SLE_HPC 15-SP4) with Linux kernel 5.14.21. The system used a GNU Bash shell version 4.4.23, and ran on a node equipped with Intel(R) Xeon(R) Gold 6248 CPUs @ 2.50GHz. 
 
 # Script overview
+
+This repository contains the following R/bash scripts:
 
 | **Script**                      | **Purpose**                                            |        
 |---------------------------------|--------------------------------------------------------|
@@ -65,13 +67,13 @@ The pipeline was run on a high-performance computing cluster using SUSE Linux En
 | `simulate_chimerism.R`          | Simulates chimerism in transcript sequences            |
 | `filter_by_blat`                | Filters public transcripts by blat F-scores            |
 | `merge_cats_rf_results.R`       | Merges all CATS-rf results for Figure 2                |
-| `generate_fig2_elements.R`      | Generates all Figure 2 subplots and Ext. data figure 1 |
-| `generate_fig2_elements.R`      | Generates Figure 3 subplots                            |
+| `generate_fig2_elements.R`      | Generates all Figure 2 panels and Ext. data figure 1   |
+| `generate_fig3_elements.R`      | Generates Figure 3 panels                              |
 | `merge_cats_rb_results.R`       | Merges all CATS-rb results for Figure 5                |
-| `generate_fig5_elements.R`      | Generates Figure 5 subplots and Ext. data figures 2-6  |
-| `generate_fig_ext7.R`             | Generates Ext. data Figure 7                           |
+| `generate_fig5_elements.R`      | Generates Figure 5 panels and Ext. data figures 2-6    |
+| `generate_fig_ext7.R`           | Generates Ext. data Figure 7                           |
 
-For convinience, tables containing benchmark results used in figure generation are provided:
+For convenience, tables containing benchmark results used in figure generation are also provided:
 
 | **Table**                                              | **Figure**                    | **Download link**                                                                                                                     | 
 |--------------------------------------------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
@@ -83,7 +85,7 @@ For convinience, tables containing benchmark results used in figure generation a
 | `merged_cats_rb_public_assembly_scores.tsv`            | Figure 5d                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_public_assembly_scores_for_figure5.tsv.gz)            |
 | `simulated_assembly_cats_rf_f_scores.tsv`              | Figure 5 (e,f)                | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/simulated_assembly_cats_rf_f_scores_for_figure5.tsv.gz)              |
 | `merged_cats_rb_simulated_mutated_scores.tsv`          | Figure 5g                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv.gz) |
-| `chimeric_ref_transcriptome_names.tsv`                 | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_figure_ext7.gz)                   |
-| `str_inconsistent_transcripts.tsv`                     | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_ext7.gz)                       |
+| `chimeric_ref_transcriptome_names.tsv`                 | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_figure_ext7.gz)                 |
+| `str_inconsistent_transcripts.tsv`                     | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_ext7.gz)                     |
 
-Tables should be unzipped before being directly supplied to the correpsonding R scripts.
+Tables should be unzipped before being directly supplied to the corresponding R scripts.

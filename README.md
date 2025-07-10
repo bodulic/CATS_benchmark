@@ -9,10 +9,9 @@ To run the full pipeline, clone this repository and execute the master script (C
 ```bash
 ./CATS_benchmark.bash
 ```
+Make sure all required dependencies are added to the `PATH` environment variable before running the script. An active internet connection is required.
 
-Make sure all required dependencies are available in your environment before running the script. Active internet connection is required.
-
-## Dependencies
+# Dependencies
 
 The following dependencies were used in the pipeline:
 
@@ -46,32 +45,32 @@ The following dependencies were used in the pipeline:
 | cowplot (R)      | 1.1.3       |
 | ggbiplot (R)     | 0.6.2       |
 
-The stated dependencies should be included in the `PATH` enviroment variable before running the script. Tools denoted with (R) correspond to R packages. Version information for dependencies specific to CATS-rf and CATS-rb can be found in the README files of their respective repositories.
+Tools denoted with (R) correspond to R packages. Version information for dependencies specific to CATS-rf and CATS-rb can be found in the README files of their respective repositories.
 
 The pipeline was run on a high-performance computing cluster using SUSE Linux Enterprise High Performance Computing 15 SP4 (SLE_HPC 15-SP4) with Linux kernel 5.14.21. The system used a GNU Bash shell version 4.4.23, and ran on a node equipped with Intel(R) Xeon(R) Gold 6248 CPUs @ 2.50GHz. 
 
 # Script overview
 
-This repository contains the following R/bash scripts:
+This repository contains the following scripts:
 
-| **Script**                      | **Purpose**                                            |        
-|---------------------------------|--------------------------------------------------------|
-| `CATS_benchmark.bash`           | Master script for the analysis                         |
-| `simulate_reads.R`              | Performs RNA-seq library simulation                    |
-| `get_f_scores_from_crb_table.R` | Calculated transcript F-scores from CRB-BLAST results  |
-| `simulate_insertion.R`          | Simulates insertions in transcript sequences           |
-| `simulate_mismatch.R`           | Simulates mismatches in transcript sequences           |
-| `simulate_deletion.R`           | Simulates deletions in transcript sequences            |
-| `simulate_redundancy.R`         | Simulates redundancy in transcript sequences           |
-| `simulate_fragmentation.R`      | Simulates fragmentation in transcript sequences        |
-| `simulate_chimerism.R`          | Simulates chimerism in transcript sequences            |
-| `filter_by_blat`                | Filters public transcripts by blat F-scores            |
-| `merge_cats_rf_results.R`       | Merges all CATS-rf results for Figure 2                |
-| `generate_fig2_elements.R`      | Generates all Figure 2 panels and Ext. data figure 1   |
-| `generate_fig3_elements.R`      | Generates Figure 3 panels                              |
-| `merge_cats_rb_results.R`       | Merges all CATS-rb results for Figure 5                |
-| `generate_fig5_elements.R`      | Generates Figure 5 panels and Ext. data figures 2-6    |
-| `generate_fig_ext7.R`           | Generates Ext. data Figure 7                           |
+| **Script**                      | **Purpose**                                             |        
+|---------------------------------|---------------------------------------------------------|
+| `CATS_benchmark.bash`           | Master script for the analysis                          |
+| `simulate_reads.R`              | Performs RNA-seq library simulation                     |
+| `get_f_scores_from_crb_table.R` | Calculated transcript F-scores from CRB-BLAST results   |
+| `simulate_insertion.R`          | Simulates insertions in transcript sequences            |
+| `simulate_mismatch.R`           | Simulates mismatches in transcript sequences            |
+| `simulate_deletion.R`           | Simulates deletions in transcript sequences             |
+| `simulate_redundancy.R`         | Simulates redundancy in transcript sequences            |
+| `simulate_fragmentation.R`      | Simulates fragmentation in transcript sequences         |
+| `simulate_chimerism.R`          | Simulates chimerism in transcript sequences             |
+| `filter_by_blat.R`              | Filters public transcripts by F-scores obtained by blat |
+| `merge_cats_rf_results.R`       | Merges all CATS-rf results for Figure 2                 |
+| `generate_fig2_elements.R`      | Generates all Figure 2 panels and Ext. data figure 1    |
+| `generate_fig3_elements.R`      | Generates Figure 3 panels                               |
+| `merge_cats_rb_results.R`       | Merges all CATS-rb results for Figure 5                 |
+| `generate_fig5_elements.R`      | Generates Figure 5 panels and Ext. data figures 2-6     |
+| `generate_fig_ext7.R`           | Generates Ext. data Figure 7                            |
 
 For convenience, tables containing benchmark results used in figure generation are also provided:
 
@@ -85,7 +84,7 @@ For convenience, tables containing benchmark results used in figure generation a
 | `merged_cats_rb_public_assembly_scores_for_figure5.tsv`            | Figure 5d                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_public_assembly_scores_for_figure5.tsv.gz)            |
 | `simulated_cats_rf_f_results_for_figure5.tsv.gz`                   | Figure 5 (e,f)                | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/simulated_cats_rf_f_results_for_figure5.tsv.gz)                      |
 | `merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv` | Figure 5g                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv.gz) |
-| `chimeric_ref_transcriptome_names_for_figure_ext7`                   | Ext. data figure 7          | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_figure_ext7.gz)                 |
-| `str_inconsistent_transcripts_for_figure_ext7.tsv`                   | Ext. data figure 7          | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_ext7.gz)                     |
+| `chimeric_ref_transcriptome_names_for_figure_ext7`                 | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_figure_ext7.gz)                 |
+| `str_inconsistent_transcripts_for_figure_ext7.tsv`                 | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_ext7.gz)                     |
 
 Tables should be unzipped before being directly supplied to the corresponding R scripts.

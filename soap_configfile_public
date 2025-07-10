@@ -1,0 +1,17 @@
+#maximal read length
+max_rd_len="${READ_LEN}"
+[LIB]
+#maximal read length in this lib
+rd_len_cutof="${READ_LEN}"
+#average insert size
+avg_ins=200
+#if sequence needs to be reversed 
+reverse_seq=0
+#in which part(s) the reads are used
+asm_flags=3
+#minimum aligned length to contigs for a reliable read location (at least 32 for short insert size)
+map_len=32
+#fasta file for read 1 
+q1=reads1_val_1.fq
+#fasta file for read 2
+q2=reads2_val_2.fq

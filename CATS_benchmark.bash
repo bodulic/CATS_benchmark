@@ -638,7 +638,7 @@ do
  do
   mkdir "${transcriptome}_crb" && cd "${transcriptome}_crb"
   echo "Running BLAT on ${transcriptome}"
-  pblat "../../../ref_transcriptomes/${ref_transcriptome}" "../${transcriptome}" -t=dna -q=dna -threads=20 -out=psl blat_output_tmp.psl
+  pblat "../../../ref_transcriptomes/${ref_transcriptome}" "../${transcriptome}" -t=dna -q=dna -maxIntron=0 -tileSize=8 -threads=20 -out=psl blat_output_tmp.psl
   tail -n +6 blat_output_tmp.psl > blat_output.psl
   filter_by_blat.R 20 blat_output.psl 0.5 "../${transcriptome}" "${transcriptome}"
   echo "Running CRB-BLAST on ${transcriptome}"

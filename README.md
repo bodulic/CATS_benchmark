@@ -1,6 +1,6 @@
 # CATS Benchmark
 
-This repository contains the scripts used in the analyses presented in the paper: “Comprehensive Transcriptome Quality Assessment Using CATS: Reference-free and Reference-based Approaches” (Bodulić & Vlahoviček, 2025). More information can be found in the [preprint](x) (coming soon).
+This repository contains the scripts used in the analysis presented in the paper: “Comprehensive Transcriptome Quality Assessment Using CATS: Reference-free and Reference-based Approaches” (Bodulić & Vlahoviček, 2025). More information can be found in the [preprint](x) (coming soon).
 
 # General Information
 
@@ -75,17 +75,17 @@ This repository contains the following R/bash scripts:
 
 For convenience, tables containing benchmark results used in figure generation are also provided:
 
-| **Table**                                              | **Figure**                    | **Download link**                                                                                                                     | 
-|--------------------------------------------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `merged_simulated_transcript_scores_for_figure2.tsv`   | Figure 2 (a–e)                | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_simulated_transcript_scores_for_figure2.tsv.gz)               |
-| `merged_simulated_assembly_scores_for_figure2.tsv`     | Figure 2f                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_simulated_assembly_scores_for_figure2.tsv.gz)                 |
-| `merged_public_transcript_scores_for_figure2.tsv`      | Figure 2g, Ext data. figure 1 | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_public_transcript_scores_for_figure2.tsv.gz)                  |
-| `mutation_analysis_CATS_rf_transcript_scores.tsv`      | Figure 3                      | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/mutation_analysis_CATS_rf_transcript_scores_for_figure3.tsv.gz)      |
-| `merged_cats_rb_simulated_assembly_scores.tsv`         | Figure 5 (a–c,e,f)            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_assembly_scores_for_figure5.tsv.gz)         |
-| `merged_cats_rb_public_assembly_scores.tsv`            | Figure 5d                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_public_assembly_scores_for_figure5.tsv.gz)            |
-| `simulated_assembly_cats_rf_f_scores.tsv`              | Figure 5 (e,f)                | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/simulated_assembly_cats_rf_f_scores_for_figure5.tsv.gz)              |
-| `merged_cats_rb_simulated_mutated_scores.tsv`          | Figure 5g                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv.gz) |
-| `chimeric_ref_transcriptome_names.tsv`                 | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_figure_ext7.gz)                 |
-| `str_inconsistent_transcripts.tsv`                     | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_ext7.gz)                     |
+| **Table**                                                          | **Figure**                    | **Download link**                                                                                                                     | 
+|--------------------------------------------------------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `merged_simulated_transcript_scores_for_figure2.tsv`               | Figure 2 (a–e)                | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_simulated_transcript_scores_for_figure2.tsv.gz)               |
+| `merged_simulated_assembly_scores_for_figure2.tsv`                 | Figure 2f                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_simulated_assembly_scores_for_figure2.tsv.gz)                 |
+| `merged_public_transcript_scores_for_figure2.tsv`                  | Figure 2g, Ext data. figure 1 | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_public_transcript_scores_for_figure2.tsv.gz)                  |
+| `mutation_analysis_CATS_rf_transcript_scores_for_figure3.tsv`      | Figure 3                      | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/mutation_analysis_CATS_rf_transcript_scores_for_figure3.tsv.gz)      |
+| `merged_cats_rb_simulated_assembly_scores_for_figure5.tsv`         | Figure 5 (a–c,e,f)            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_assembly_scores_for_figure5.tsv.gz)         |
+| `merged_cats_rb_public_assembly_scores_for_figure5.tsv`            | Figure 5d                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_public_assembly_scores_for_figure5.tsv.gz)            |
+| `simulated_cats_rf_f_results_for_figure5.tsv.gz`                   | Figure 5 (e,f)                | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/simulated_cats_rf_f_results_for_figure5.tsv.gz)                      |
+| `merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv` | Figure 5g                     | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv.gz) |
+| `chimeric_ref_transcriptome_names_for_figure_ext7`                   | Ext. data figure 7          | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_figure_ext7.gz)                 |
+| `str_inconsistent_transcripts_for_figure_ext7.tsv`                   | Ext. data figure 7          | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_ext7.gz)                     |
 
 Tables should be unzipped before being directly supplied to the corresponding R scripts.

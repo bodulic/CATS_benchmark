@@ -72,6 +72,8 @@ This repository contains the following scripts:
 | `generate_fig5_elements.R`      | Generates Figure 5 panels and Ext. data figures 2-6     |
 | `generate_fig_ext7.R`           | Generates Ext. data Figure 7                            |
 
+The repository also contains configfiles for SOAPdenovo-Trans runs for simulated (`soap_configfile_simulated`) and public (`soap_configfile_public`) libraries
+
 For convenience, tables containing benchmark results used in figure generation are also provided:
 
 | **Table**                                                          | **Figure**                    | **Download link**                                                                                                                     | 

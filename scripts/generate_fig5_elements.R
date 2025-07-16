@@ -17,7 +17,7 @@ simulated_assembly_scores[, "species" := paste0(toupper(substr(species, 1, 1)), 
 #Reshaping data to long format
 simulated_assembly_scores_long <- melt(simulated_assembly_scores, measure.vars = colnames(simulated_assembly_scores)[c(-86, -87, -88)], variable.name = "mis_cov_assem", value.name = "score")
 
-#Extracting baseline coverage, mismatch rate, and assembler information
+#Extracting coverage, mismatch rate, and assembler information
 simulated_assembly_scores_long[, "coverage" := sub("^[^_]*_([^_]*_[^_]*)_.*", "\\1", mis_cov_assem)]
 simulated_assembly_scores_long[, "coverage" := sub("_", "-", coverage)]
 simulated_assembly_scores_long[, "coverage" := paste0(coverage, "x")]

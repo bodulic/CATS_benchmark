@@ -22,7 +22,7 @@ coverage_lower_boundary <- as.numeric(sub("_.*", "", COVERAGE_RANGE))
 coverage_upper_boundary <- as.numeric(sub(".*_", "", COVERAGE_RANGE))
 coverage_sample_range <- seq(coverage_lower_boundary, coverage_upper_boundary, by = 1)
   
-#Calculating the number of simulated reads per transcript
+#Calculating the number of simulated reads per transcript (function of coverage, transcript length, and read length)
 set.seed(SEED)
 coverage_sample <- sample(coverage_sample_range, size = 1)
 per_transcript_read_N <- round(coverage_sample * width(transcriptome) / READ_LENGTH)

@@ -10,7 +10,7 @@ suppressPackageStartupMessages(library(cowplot))
 #Importing merged simulated transcript scores from file
 simulated_transcript_scores <- fread("merged_simulated_transcript_scores_for_figure2.tsv")
 
-#Extracting species names, baseline coverage, mismatch rate, and assembler information
+#Extracting species names, coverage, mismatch rate, and assembler information
 simulated_transcript_scores[, "species" := sub("^sim_([^_]+_[^_]+)_.*", "\\1",  assembly)]
 simulated_transcript_scores[, "species" := sub("_", ". ", species)]
 simulated_transcript_scores[, "species" := paste0(toupper(substr(species, 1, 1)), substr(species, 2, nchar(species)))]
@@ -152,7 +152,7 @@ for (i in 1 : length(all_sp_cov_assem)) {
 sp_cov_assem_cor_table <- data.table(sp_cov_assem = all_sp_cov_assem, cats_rf_cor_coeff = cats_rf_cor_coeffs, rsem_eval_cor_coeff = rsem_eval_cor_coeffs, transrate_cor_coeff = transrate_cor_coeffs)
 sp_cov_assem_cor_table_longer <- melt(sp_cov_assem_cor_table, measure.vars = c("cats_rf_cor_coeff", "rsem_eval_cor_coeff", "transrate_cor_coeff"),  variable.name = "tool", value.name = "cor_coeff")
 
-#Extracting species names, baseline coverage, and assembler information
+#Extracting species names, coverage, and assembler information
 sp_cov_assem_cor_table_longer[, "species" := sub("_.*", "", sp_cov_assem)]
 sp_cov_assem_cor_table_longer[, "coverage" := sub("^[^_]*_([^_]*)_.*", "\\1", sp_cov_assem)]
 sp_cov_assem_cor_table_longer[, "assembler" := sub("^[^_]*_[^_]*_(.*)", "\\1", sp_cov_assem)]

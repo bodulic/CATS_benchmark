@@ -1,6 +1,6 @@
 # CATS Benchmark
 
-This repository contains the scripts used in the analysis presented in the paper: “Comprehensive Transcriptome Quality Assessment Using CATS: Reference-free and Reference-based Approaches” (Bodulić & Vlahoviček, 2025). More information can be found in the [preprint](x) (coming soon).
+This repository contains the scripts used in the analysis presented in the paper: “Comprehensive Transcriptome Quality Assessment Using CATS: Reference-free and Reference-based Approaches” (Bodulić and Vlahoviček, 2025). More information can be found in the [preprint](https://www.biorxiv.org/content/10.1101/2025.07.22.666112v1).
 
 # General Information
 

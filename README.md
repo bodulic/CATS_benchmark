@@ -9,7 +9,7 @@ To run the full pipeline, clone this repository and execute the master script (C
 ```bash
 ./CATS_benchmark.bash
 ```
-Make sure all required dependencies are added to the `PATH` environment variable before running the script. An active internet connection is required.
+Make sure all required dependencies are added to the `PATH` environment variable. All scripts in the scripts directory should also be added to `PATH` before running the script. An active internet connection is required.
 
 # Dependencies
 

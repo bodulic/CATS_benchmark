@@ -72,7 +72,7 @@ This repository contains the following scripts:
 | `generate_fig5_elements.R`      | Generates Figure 5 panels and Ext. data figures 2-6     |
 | `generate_fig_ext7.R`           | Generates Ext. data Figure 7                            |
 
-The repository also contains configfiles for SOAPdenovo-Trans runs for simulated (`soap_configfile_simulated`) and public (`soap_configfile_public`) libraries
+The repository also contains configfiles for SOAPdenovo-Trans runs for simulated (`soap_configfile_simulated`) and public (`soap_configfile_public`) libraries.
 
 For convenience, tables containing benchmark results used in figure generation are also provided:
 
@@ -90,3 +90,7 @@ For convenience, tables containing benchmark results used in figure generation a
 | `str_inconsistent_transcripts_for_figure_ext7.tsv`                 | Ext. data figure 7            | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_figure_ext7.gz)                     |
 
 Tables should be unzipped before being directly supplied to the corresponding R scripts.
+
+If the files are not directly accessible via the provided links, they are available in the following [folder](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables). 
+
+The tables have also been deposited to Zenodo (10.5281/zenodo.16837971).

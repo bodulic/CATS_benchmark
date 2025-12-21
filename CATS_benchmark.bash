@@ -95,12 +95,12 @@ do
 done
 cd ..
 
-#Simulating RNA-seq reads
+#Simulating RNA-seq reads (controlled simulations)
 coverage_levels=("1_4" "5_10" "11_20" "21_30" "31_40" "41_50" "51_100")
 mismatch_rates=(0.005 0.01 0.02)
 
 mkdir simulated_data && cd simulated_data
-ref_transcriptomes="$(ls -tr ../ref_transcriptomes/*)"
+ref_transcriptomes="$(ls -tr ../ref3/*)"
 for ref_transcriptome in ${ref_transcriptomes}
 do
  ref_transcriptome_name="$(basename "${ref_transcriptome}")"
@@ -108,14 +108,61 @@ do
  do
   for mismatch in "${mismatch_rates[@]}"
   do
-   echo "Simulating reads from ${ref_transcriptome_name}, Coverage: ${coverage}, Read length: 100 bp, Mismatch rate: ${mismatch}"
-   simulate_reads.R "${ref_transcriptome}" "${coverage}" 12345 100 "${mismatch}" "${ref_transcriptome_name}"
+   echo "Controlled simulation of reads from ${ref_transcriptome_name}, Seed: 12345, Coverage: ${coverage}, Read length: 100 bp, Mismatch rate: ${mismatch}"
+   simulate_reads.R "${ref_transcriptome}" controlled "${coverage}" 12345 1 100 "${mismatch}" "${ref_transcriptome_name}"
   done
  done
 done
 
+#Simulating RNA-seq reads (realistic simulations)
+coverage_levels=(20 40 60 80)
+base_seeds=(1 100 1000 100000)
+
+for ref_transcriptome in ${ref_transcriptomes}
+do
+ ref_transcriptome_name="$(basename "${ref_transcriptome}")"
+ if [[ "${ref_transcriptome}" == *s_cerevisiae* ]]
+ then
+  expressed_prop_range="0.6_0.8"
+  seed_multiplier=1
+elif [[ "${ref_transcriptome}" == *c_elegans* ]]
+ then
+  expressed_prop_range="0.3_0.5"
+  seed_multiplier=2
+elif [[ "${ref_transcriptome}" == *d_melanogaster* ]]
+ then
+  expressed_prop_range="0.3_0.5"
+  seed_multiplier=3
+elif [[ "${ref_transcriptome}" == *a_thaliana* ]]
+ then
+   expressed_prop_range="0.3_0.5"
+   seed_multiplier=4
+ elif [[ "${ref_transcriptome}" == *m_musculus* ]]
+ then
+  expressed_prop_range="0.2_0.4"
+  seed_multiplier=5
+elif [[ "${ref_transcriptome}" == *h_sapiens* ]]
+ then
+  expressed_prop_range="0.2_0.4"
+  seed_multiplier=6
+ fi
+ for base_seed in "${base_seeds[@]}"
+ do
+  seed=$((base_seed * seed_multiplier))
+  for coverage in "${coverage_levels[@]}"
+  do
+   echo "Realistic simulation of reads from ${ref_transcriptome_name}, Seed: ${seed}, Coverage: ${coverage}, Read length: 100 bp, Mismatch rate: 0.005"
+   simulate_reads.R "${ref_transcriptome}" realistic "${coverage}" "${seed}" "${expressed_prop_range}" 100 0.005 "${ref_transcriptome_name}"
+  done
+ done
+done
+
+rm *tmp_transcriptome.fasta
+mkdir supplementary_figure_11_data
+mv *coverage_table.tsv supplementary_figure_11_data
+
 #Assembling simulated libraries with rnaSPAdes, Trinity, IDBA-tran, and SOAPdenovo-Trans
-for dir in sim_*
+for dir in *sim_*
 do
  cd "${dir}"
 
@@ -140,14 +187,14 @@ do
  mv "${outdir}/contig.fa" "${dir}_IDB"
 
  echo "Assembling ${dir} with SOAPdenovo-Trans"
- SOAPdenovo-Trans-31mer all -s ../../soap_configfile_simulated -p 20 -o "${dir}_soap"
+ /common/WORK/kbodulic/programi/SOAPdenovo-Trans/SOAPdenovo-Trans-31mer all -s ../../soap_configfile_simulated -p 20 -o "${dir}_soap"
  mv "${dir}_soap.scafSeq" "${dir}_SOA"
 
  cd ..
 done
 
 #Running CATS-rf, TransRate, and RSEM-EVAL on simulated transcriptome assemblies
-for dir in sim_*
+for dir in *sim_*
 do
  cd "${dir}"
  for transcriptome in *_RSP *_TRI *_IDB *_SOA
@@ -160,13 +207,11 @@ do
   echo "Running RSEM-EVAL on ${transcriptome}"
   rsem-eval-estimate-transcript-length-distribution "../${transcriptome}" parameter_file
   rsem-eval-calculate-score --seed 100 -p 20 --paired-end --transcript-length-parameters parameter_file ../sample_01_1.fq ../sample_01_2.fq "../${transcriptome}" "${transcriptome}_rsem" 180
-  cut -f 2 "${transcriptome}_rsem.score" | head -n 1 > "${transcriptome}_rsem_eval_assembly_score"
   cut -f 1,9 "${transcriptome}_rsem.score.isoforms.results" > "${transcriptome}_rsem_eval_transcript_scores"
   cd ..
 
   echo "Running TransRate on ${transcriptome}"
   transrate --assembly="${transcriptome}" --left=sample_01_1.fq --right=sample_01_2.fq --threads=20 --output="${transcriptome}_transrate"
-  cut -d "," -f 37 "${transcriptome}_transrate/assemblies.csv" | tail -n +2 > "${transcriptome}_transrate/${transcriptome}_transrate_assembly_score"
   cut -d "," -f 1,16,15,17,18,9 "${transcriptome}"_transrate/sim*/contigs.csv > "${transcriptome}_transrate/${transcriptome}_transrate_transcript_scores"
 
  done
@@ -181,19 +226,26 @@ map_ref_transcriptome_info() {
   *d_melanogaster*) ref_transcriptome="${ref_tr_outputs[d_melanogaster]}" ;;
   *a_thaliana*)     ref_transcriptome="${ref_tr_outputs[a_thaliana]}" ;;
   *m_musculus*)     ref_transcriptome="${ref_tr_outputs[m_musculus]}" ;;
-  *h_sapiens*)      ref_transcriptome="${ref_tr_outputs[h_sapiens]}";;
+  *h_sapiens*)      ref_transcriptome="${ref_tr_outputs[h_sapiens]}" ;;
   esac
 }
 
-for dir in sim_*
+for dir in *sim_*
 do
  cd "${dir}"
  map_ref_transcriptome_info "${dir}"
+ if [[ "${dir}" == *realistic* ]]
+ then
+  awk '/^>/{gsub(/read[0-9]+\/?/, "", $0); sub(/^>/, "", $0); h=$1; if(!seen[h]++) print h}' sample_01_1.fasta > transcript_ids
+  seqkit grep -f transcript_ids "../../ref_transcriptomes/${ref_transcriptome}" > transcripts_to_evaluate_f_scores.fasta
+ else
+  ln -s "../../ref_transcriptomes/${ref_transcriptome}" transcripts_to_evaluate_f_scores.fasta
+ fi
  for transcriptome in *_RSP *_TRI *_IDB *_SOA
  do
   mkdir "${transcriptome}_crb" && cd "${transcriptome}_crb"
   echo "Running CRB-BLAST on ${transcriptome}"
-  crb-blast -q "../${transcriptome}" -t "../../../ref_transcriptomes/${ref_transcriptome}" -h 20 -o "${transcriptome}_crb"
+  crb-blast -q "../${transcriptome}" -t ../transcripts_to_evaluate_f_scores.fasta -h 20 -o "${transcriptome}_crb"
   get_f_scores_from_crb_table.R 20 "${transcriptome}_crb" "../${transcriptome}" "${transcriptome}"
   cd ..
  done
@@ -201,7 +253,7 @@ do
 done
 
 #Simulating mutations in a subset of simulated transcriptome assemblies (all species, coverage 21-30x, mismatch rate 0.05, rnaSPAdes and Trinity assemblers). Running CATS-rf on the mutated assemblies
-for dir in *100_21_30_0.005
+for dir in *100_21_30_0.005_1_12345
 do
  cd "${dir}"
  for transcriptome in *_RSP *_TRI
@@ -353,7 +405,7 @@ cd ..
 
 #Mapping simulated transcriptome assemblies
 cd simulated_data
-for dir in sim_*
+for dir in *sim_*
 do
  cd "${dir}"
  map_species_info "${dir}"
@@ -364,7 +416,7 @@ do
  done
 
 #Mapping simulated transcriptome assemblies undergoing multiplicative mutation simulation
- if [[ "${dir}" == *100_21_30_0.005 ]]
+ if [[ "${dir}" == *100_21_30_0.005_1_12345 ]]
  then
   for transcriptome_mut_dir in *_RSP_mut_sim *_TRI_mut_sim
   do
@@ -396,7 +448,8 @@ compare_species_info() {
    min_tr_set_len=100
    max_tr_set_len=25000
    num_longest_scaff=16
-   num_genomic_bins=10000 ;;
+   num_genomic_bins=10000
+   seed_first_n=1 ;;
   *c_elegans*)
    ref_genome=Caenorhabditis_elegans.WBcel235.dna.toplevel.fa
    ref_transcriptome=c_elegans_wbcel235_transcripts.fa
@@ -407,7 +460,8 @@ compare_species_info() {
    min_tr_set_len=150
    max_tr_set_len=100000
    num_longest_scaff=6
-   num_genomic_bins=15000 ;;
+   num_genomic_bins=15000
+   seed_first_n=2 ;;
   *d_melanogaster*)
    ref_genome=Drosophila_melanogaster.BDGP6.46.dna.toplevel.fa
    ref_transcriptome=d_melanogaster_bdgp6_46_transcripts.fa
@@ -418,7 +472,8 @@ compare_species_info() {
    min_tr_set_len=200
    max_tr_set_len=500000
    num_longest_scaff=4
-   num_genomic_bins=15000 ;;
+   num_genomic_bins=15000
+   seed_first_n=3 ;;
   *a_thaliana*)
    ref_genome=Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
    ref_transcriptome=a_thaliana_tair10_transcripts.fa
@@ -429,7 +484,8 @@ compare_species_info() {
    min_tr_set_len=100
    max_tr_set_len=50000
    num_longest_scaff=5
-   num_genomic_bins=15000 ;;
+   num_genomic_bins=15000
+   seed_first_n=4 ;;
   *m_musculus*)
    ref_genome=Mus_musculus.GRCm39.dna.primary_assembly.fa
    ref_transcriptome=m_musculus_grcm39_transcripts.fa
@@ -440,7 +496,8 @@ compare_species_info() {
    min_tr_set_len=450
    max_tr_set_len=3000000
    num_longest_scaff=21
-   num_genomic_bins=40000 ;;
+   num_genomic_bins=40000
+   seed_first_n=5 ;;
   *h_sapiens*)
    ref_genome=Homo_sapiens.GRCh38.dna.primary_assembly.fa
    ref_transcriptome=h_sapiens_grhc38_transcripts.fa
@@ -451,11 +508,12 @@ compare_species_info() {
    min_tr_set_len=300
    max_tr_set_len=3000000
    num_longest_scaff=24
-   num_genomic_bins=40000 ;;
+   num_genomic_bins=40000
+   seed_first_n=6 ;;
  esac
 }
 
-#Running CATS_rb_compare on the complete dataset, five assembly subsets with reducing maximum coverage and simulated assemblies undergoing multiplicative mutation simulation
+#Running CATS_rb_compare on the complete controlled simulation dataset, five assembly subsets with reducing maximum coverage, complete realistically simulated dataset, each library in the realistically simulated dataset, and simulated assemblies undergoing multiplicative mutation simulation
 mkdir CATS_rb_compare_results && cd CATS_rb_compare_results
 species_list=("s_cerevisiae" "c_elegans" "d_melanogaster" "a_thaliana" "m_musculus" "h_sapiens")
 for species in "${species_list[@]}"
@@ -466,9 +524,14 @@ do
  do
   find "${dir}" -type d -name "*CATS_rb_map" -exec ln -s {} . \;
  done
- for name in *_100_*
+ for name in controlled_sim_*_100_*
  do
-  new_name="$(echo "${name}" | sed -E 's/.*100_([^/]*?)_CATS_rb_map$/\1/')"
+  new_name="$(echo "${name}" | sed -E 's/.*100_([^/]*?)_CATS_rb_map$/\1/' | sed 's/1_12345_//')"
+  mv "${name}" "${new_name}"
+ done
+ for name in realistic_sim_*_100_*
+ do
+  new_name="$(echo "${name}" | sed -E 's/.*.fa_100_([^/]*?)_CATS_rb_map$/\1/; s/^(([^_]*_){2})[^_]*_(.*)$/\1\3/')"
   mv "${name}" "${new_name}"
  done
  for name in *_mult5_*
@@ -486,35 +549,48 @@ do
   fi
   mv "${name}" "${new_name}"
  done
- mv *CATS_rb_map ref
+ mv *CATS_rb_map REF
 
- echo "Running CATS-rb comparison on the complete dataset"
- CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -F "../../../ref_annotation/${ref_annotation}" -t 20 -D CATS_rb_comparison_sim1 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 11_20_0.005_RSP 11_20_0.01_RSP 11_20_0.02_RSP 21_30_0.005_RSP 21_30_0.01_RSP 21_30_0.02_RSP 31_40_0.005_RSP 31_40_0.01_RSP 31_40_0.02_RSP 41_50_0.005_RSP 41_50_0.01_RSP 41_50_0.02_RSP 51_100_0.005_RSP 51_100_0.01_RSP 51_100_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 11_20_0.005_TRI 11_20_0.01_TRI 11_20_0.02_TRI 21_30_0.005_TRI 21_30_0.01_TRI 21_30_0.02_TRI 31_40_0.005_TRI 31_40_0.01_TRI 31_40_0.02_TRI 41_50_0.005_TRI 41_50_0.01_TRI 41_50_0.02_TRI 51_100_0.005_TRI 51_100_0.01_TRI 51_100_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 11_20_0.005_IDB 11_20_0.01_IDB 11_20_0.02_IDB 21_30_0.005_IDB 21_30_0.01_IDB 21_30_0.02_IDB 31_40_0.005_IDB 31_40_0.01_IDB 31_40_0.02_IDB 41_50_0.005_IDB 41_50_0.01_IDB 41_50_0.02_IDB 51_100_0.005_IDB 51_100_0.01_IDB 51_100_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA 11_20_0.005_SOA 11_20_0.01_SOA 11_20_0.02_SOA 21_30_0.005_SOA 21_30_0.01_SOA 21_30_0.02_SOA 31_40_0.005_SOA 31_40_0.01_SOA 31_40_0.02_SOA 41_50_0.005_SOA 41_50_0.01_SOA 41_50_0.02_SOA 51_100_0.005_SOA 51_100_0.01_SOA 51_100_0.02_SOA ref
- cd CATS_rb_comparison_sim1 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_sim_rel_results1" && mv CATS_rb_annotation_based_analysis_results.tsv "${species}_CATS_rb_sim_annot_results" && cd ..
+ echo "Running CATS-rb comparison on the complete controlled dataset"
+ CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -F "../../../ref_annotation/${ref_annotation}" -t 20 -D CATS_rb_comparison_cont_sim1 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 11_20_0.005_RSP 11_20_0.01_RSP 11_20_0.02_RSP 21_30_0.005_RSP 21_30_0.01_RSP 21_30_0.02_RSP 31_40_0.005_RSP 31_40_0.01_RSP 31_40_0.02_RSP 41_50_0.005_RSP 41_50_0.01_RSP 41_50_0.02_RSP 51_100_0.005_RSP 51_100_0.01_RSP 51_100_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 11_20_0.005_TRI 11_20_0.01_TRI 11_20_0.02_TRI 21_30_0.005_TRI 21_30_0.01_TRI 21_30_0.02_TRI 31_40_0.005_TRI 31_40_0.01_TRI 31_40_0.02_TRI 41_50_0.005_TRI 41_50_0.01_TRI 41_50_0.02_TRI 51_100_0.005_TRI 51_100_0.01_TRI 51_100_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 11_20_0.005_IDB 11_20_0.01_IDB 11_20_0.02_IDB 21_30_0.005_IDB 21_30_0.01_IDB 21_30_0.02_IDB 31_40_0.005_IDB 31_40_0.01_IDB 31_40_0.02_IDB 41_50_0.005_IDB 41_50_0.01_IDB 41_50_0.02_IDB 51_100_0.005_IDB 51_100_0.01_IDB 51_100_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA 11_20_0.005_SOA 11_20_0.01_SOA 11_20_0.02_SOA 21_30_0.005_SOA 21_30_0.01_SOA 21_30_0.02_SOA 31_40_0.005_SOA 31_40_0.01_SOA 31_40_0.02_SOA 41_50_0.005_SOA 41_50_0.01_SOA 41_50_0.02_SOA 51_100_0.005_SOA 51_100_0.01_SOA 51_100_0.02_SOA REF
+ cd CATS_rb_comparison_cont_sim1 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_cont_sim_rel_results1" && mv CATS_rb_annotation_based_analysis_results.tsv "${species}_CATS_rb_cont_sim_annot_results" && cd ..
 
  echo "Running CATS-rb comparison on subset 1 (51-100x)"
- CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_sim2 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 11_20_0.005_RSP 11_20_0.01_RSP 11_20_0.02_RSP 21_30_0.005_RSP 21_30_0.01_RSP 21_30_0.02_RSP 31_40_0.005_RSP 31_40_0.01_RSP 31_40_0.02_RSP 41_50_0.005_RSP 41_50_0.01_RSP 41_50_0.02_RSP 51_100_0.005_RSP 51_100_0.01_RSP 51_100_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 11_20_0.005_TRI 11_20_0.01_TRI 11_20_0.02_TRI 21_30_0.005_TRI 21_30_0.01_TRI 21_30_0.02_TRI 31_40_0.005_TRI 31_40_0.01_TRI 31_40_0.02_TRI 41_50_0.005_TRI 41_50_0.01_TRI 41_50_0.02_TRI 51_100_0.005_TRI 51_100_0.01_TRI 51_100_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 11_20_0.005_IDB 11_20_0.01_IDB 11_20_0.02_IDB 21_30_0.005_IDB 21_30_0.01_IDB 21_30_0.02_IDB 31_40_0.005_IDB 31_40_0.01_IDB 31_40_0.02_IDB 41_50_0.005_IDB 41_50_0.01_IDB 41_50_0.02_IDB 51_100_0.005_IDB 51_100_0.01_IDB 51_100_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA 11_20_0.005_SOA 11_20_0.01_SOA 11_20_0.02_SOA 21_30_0.005_SOA 21_30_0.01_SOA 21_30_0.02_SOA 31_40_0.005_SOA 31_40_0.01_SOA 31_40_0.02_SOA 41_50_0.005_SOA 41_50_0.01_SOA 41_50_0.02_SOA 51_100_0.005_SOA 51_100_0.01_SOA 51_100_0.02_SOA
- cd CATS_rb_comparison_sim2 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_sim_rel_results2" && cd ..
+ CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_cont_sim2 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 11_20_0.005_RSP 11_20_0.01_RSP 11_20_0.02_RSP 21_30_0.005_RSP 21_30_0.01_RSP 21_30_0.02_RSP 31_40_0.005_RSP 31_40_0.01_RSP 31_40_0.02_RSP 41_50_0.005_RSP 41_50_0.01_RSP 41_50_0.02_RSP 51_100_0.005_RSP 51_100_0.01_RSP 51_100_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 11_20_0.005_TRI 11_20_0.01_TRI 11_20_0.02_TRI 21_30_0.005_TRI 21_30_0.01_TRI 21_30_0.02_TRI 31_40_0.005_TRI 31_40_0.01_TRI 31_40_0.02_TRI 41_50_0.005_TRI 41_50_0.01_TRI 41_50_0.02_TRI 51_100_0.005_TRI 51_100_0.01_TRI 51_100_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 11_20_0.005_IDB 11_20_0.01_IDB 11_20_0.02_IDB 21_30_0.005_IDB 21_30_0.01_IDB 21_30_0.02_IDB 31_40_0.005_IDB 31_40_0.01_IDB 31_40_0.02_IDB 41_50_0.005_IDB 41_50_0.01_IDB 41_50_0.02_IDB 51_100_0.005_IDB 51_100_0.01_IDB 51_100_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA 11_20_0.005_SOA 11_20_0.01_SOA 11_20_0.02_SOA 21_30_0.005_SOA 21_30_0.01_SOA 21_30_0.02_SOA 31_40_0.005_SOA 31_40_0.01_SOA 31_40_0.02_SOA 41_50_0.005_SOA 41_50_0.01_SOA 41_50_0.02_SOA 51_100_0.005_SOA 51_100_0.01_SOA 51_100_0.02_SOA
+ cd CATS_rb_comparison_cont_sim2 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_cont_sim_rel_results2" && cd ..
 
  echo "Running CATS-rb comparison on subset 2 (31-40x)"
- CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_sim3 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 11_20_0.005_RSP 11_20_0.01_RSP 11_20_0.02_RSP 21_30_0.005_RSP 21_30_0.01_RSP 21_30_0.02_RSP 31_40_0.005_RSP 31_40_0.01_RSP 31_40_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 11_20_0.005_TRI 11_20_0.01_TRI 11_20_0.02_TRI 21_30_0.005_TRI 21_30_0.01_TRI 21_30_0.02_TRI 31_40_0.005_TRI 31_40_0.01_TRI 31_40_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 11_20_0.005_IDB 11_20_0.01_IDB 11_20_0.02_IDB 21_30_0.005_IDB 21_30_0.01_IDB 21_30_0.02_IDB 31_40_0.005_IDB 31_40_0.01_IDB 31_40_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA 11_20_0.005_SOA 11_20_0.01_SOA 11_20_0.02_SOA 21_30_0.005_SOA 21_30_0.01_SOA 21_30_0.02_SOA 31_40_0.005_SOA 31_40_0.01_SOA 31_40_0.02_SOA
- cd CATS_rb_comparison_sim3 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_sim_rel_results3" && cd ..
+ CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_cont_sim3 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 11_20_0.005_RSP 11_20_0.01_RSP 11_20_0.02_RSP 21_30_0.005_RSP 21_30_0.01_RSP 21_30_0.02_RSP 31_40_0.005_RSP 31_40_0.01_RSP 31_40_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 11_20_0.005_TRI 11_20_0.01_TRI 11_20_0.02_TRI 21_30_0.005_TRI 21_30_0.01_TRI 21_30_0.02_TRI 31_40_0.005_TRI 31_40_0.01_TRI 31_40_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 11_20_0.005_IDB 11_20_0.01_IDB 11_20_0.02_IDB 21_30_0.005_IDB 21_30_0.01_IDB 21_30_0.02_IDB 31_40_0.005_IDB 31_40_0.01_IDB 31_40_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA 11_20_0.005_SOA 11_20_0.01_SOA 11_20_0.02_SOA 21_30_0.005_SOA 21_30_0.01_SOA 21_30_0.02_SOA 31_40_0.005_SOA 31_40_0.01_SOA 31_40_0.02_SOA
+ cd CATS_rb_comparison_cont_sim3 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_cont_sim_rel_results3" && cd ..
 
  echo "Running CATS-rb comparison on subset 3 (11-20x)"
- CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_sim4 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 11_20_0.005_RSP 11_20_0.01_RSP 11_20_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 11_20_0.005_TRI 11_20_0.01_TRI 11_20_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 11_20_0.005_IDB 11_20_0.01_IDB 11_20_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA 11_20_0.005_SOA 11_20_0.01_SOA 11_20_0.02_SOA
- cd CATS_rb_comparison_sim4 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_sim_rel_results4" && cd ..
+ CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_cont_sim4 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 11_20_0.005_RSP 11_20_0.01_RSP 11_20_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 11_20_0.005_TRI 11_20_0.01_TRI 11_20_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 11_20_0.005_IDB 11_20_0.01_IDB 11_20_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA 11_20_0.005_SOA 11_20_0.01_SOA 11_20_0.02_SOA
+ cd CATS_rb_comparison_cont_sim4 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_cont_sim_rel_results4" && cd ..
 
  echo "Running CATS-rb comparison on subset 4 (5-10x)"
- CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_sim5 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA
- cd CATS_rb_comparison_sim5 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_sim_rel_results5" && cd ..
+ CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_cont_sim5 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 5_10_0.005_RSP 5_10_0.01_RSP 5_10_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 5_10_0.005_TRI 5_10_0.01_TRI 5_10_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 5_10_0.005_IDB 5_10_0.01_IDB 5_10_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA 5_10_0.005_SOA 5_10_0.01_SOA 5_10_0.02_SOA
+ cd CATS_rb_comparison_cont_sim5 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_cont_sim_rel_results5" && cd ..
 
  echo "Running CATS-rb comparison on subset 5 (1-4x)"
- CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_sim6 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA
- cd CATS_rb_comparison_sim6 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_sim_rel_results6" && cd ..
+ CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_cont_sim6 "../../../ref_genomes/${ref_genome}" 1_4_0.005_RSP 1_4_0.01_RSP 1_4_0.02_RSP 1_4_0.005_TRI 1_4_0.01_TRI 1_4_0.02_TRI 1_4_0.005_IDB 1_4_0.01_IDB 1_4_0.02_IDB 1_4_0.005_SOA 1_4_0.01_SOA 1_4_0.02_SOA
+ cd CATS_rb_comparison_cont_sim6 && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_cont_sim_rel_results6" && cd ..
+
+ echo "Running CATS-rb comparison on the complete realistically simulated dataset"
+ CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_real_sim "../../../ref_genomes/${ref_genome}" "20_0.005_${seed_first_n}_RSP" "20_0.005_${seed_first_n}_TRI" "20_0.005_${seed_first_n}_IDB" "20_0.005_${seed_first_n}_SOA" "20_0.005_${seed_first_n}00_RSP" "20_0.005_${seed_first_n}00_TRI" "20_0.005_${seed_first_n}00_IDB" "20_0.005_${seed_first_n}00_SOA" "20_0.005_${seed_first_n}000_RSP" "20_0.005_${seed_first_n}000_TRI" "20_0.005_${seed_first_n}000_IDB" "20_0.005_${seed_first_n}000_SOA" "20_0.005_${seed_first_n}00000_RSP" "20_0.005_${seed_first_n}00000_TRI" "20_0.005_${seed_first_n}00000_IDB" "20_0.005_${seed_first_n}00000_SOA" "40_0.005_${seed_first_n}_RSP" "40_0.005_${seed_first_n}_TRI" "40_0.005_${seed_first_n}_IDB" "40_0.005_${seed_first_n}_SOA" "40_0.005_${seed_first_n}00_RSP" "40_0.005_${seed_first_n}00_TRI" "40_0.005_${seed_first_n}00_IDB" "40_0.005_${seed_first_n}00_SOA" "40_0.005_${seed_first_n}000_RSP" "40_0.005_${seed_first_n}000_TRI" "40_0.005_${seed_first_n}000_IDB" "40_0.005_${seed_first_n}000_SOA" "40_0.005_${seed_first_n}00000_RSP" "40_0.005_${seed_first_n}00000_TRI" "40_0.005_${seed_first_n}00000_IDB" "40_0.005_${seed_first_n}00000_SOA" "60_0.005_${seed_first_n}_RSP" "60_0.005_${seed_first_n}_TRI" "60_0.005_${seed_first_n}_IDB" "60_0.005_${seed_first_n}_SOA" "60_0.005_${seed_first_n}00_RSP" "60_0.005_${seed_first_n}00_TRI" "60_0.005_${seed_first_n}00_IDB" "60_0.005_${seed_first_n}00_SOA" "60_0.005_${seed_first_n}000_RSP" "60_0.005_${seed_first_n}000_TRI" "60_0.005_${seed_first_n}000_IDB" "60_0.005_${seed_first_n}000_SOA" "60_0.005_${seed_first_n}00000_RSP" "60_0.005_${seed_first_n}00000_TRI" "60_0.005_${seed_first_n}00000_IDB" "60_0.005_${seed_first_n}00000_SOA" "80_0.005_${seed_first_n}_RSP" "80_0.005_${seed_first_n}_TRI" "80_0.005_${seed_first_n}_IDB" "80_0.005_${seed_first_n}_SOA" "80_0.005_${seed_first_n}00_RSP" "80_0.005_${seed_first_n}00_TRI" "80_0.005_${seed_first_n}00_IDB" "80_0.005_${seed_first_n}00_SOA" "80_0.005_${seed_first_n}000_RSP" "80_0.005_${seed_first_n}000_TRI" "80_0.005_${seed_first_n}000_IDB" "80_0.005_${seed_first_n}000_SOA" "80_0.005_${seed_first_n}00000_RSP" "80_0.005_${seed_first_n}00000_TRI" "80_0.005_${seed_first_n}00000_IDB" "80_0.005_${seed_first_n}00000_SOA" REF
+ cd CATS_rb_comparison_real_sim && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_real_sim_rel_results" && cd ..
+
+ echo "Running CATS-rb comparison on the realistically simulated dataset (per-library)"
+ mapfile -t lib_ids < <(ls | grep -E '^(20|40|60|80)' | sed 's/_[^_]*$//' | sort | uniq)
+ for lib_id in "${lib_ids[@]}"
+ do
+  echo $lib_id
+  CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -F "../../../ref_annotation/${ref_annotation}" -t 20 -D "CATS_rb_comparison_real_sim_${lib_id}" "../../../ref_genomes/${ref_genome}" REF "${lib_id}_RSP" "${lib_id}_TRI" "${lib_id}_IDB" "${lib_id}_SOA"
+  cd "CATS_rb_comparison_real_sim_${lib_id}" && mv CATS_rb_main_comparison_results.tsv "${species}_${lib_id}_CATS_rb_real_sim_rel_results_lib" && mv CATS_rb_annotation_based_analysis_results.tsv "${species}_${lib_id}_CATS_rb_real_sim_annot_results_lib" && cd ..
+ done
 
  echo "Running CATS-rb comparison on assemblies undergoing multiplicative mutation simulation"
- CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_sim_mut "../../../ref_genomes/${ref_genome}" 21_30_0.005_RSP 21_30_0.005_TRI RSP_0.1_1 RSP_0.1_2 RSP_0.1_3 RSP_0.2_1 RSP_0.2_2 RSP_0.2_3 RSP_0.3_1 RSP_0.3_2 RSP_0.3_3 RSP_0.4_1 RSP_0.4_2 RSP_0.4_3 RSP_0.5_1 RSP_0.5_2 RSP_0.5_3 RSP_0.6_1 RSP_0.6_2 RSP_0.6_3 TRI_0.1_1 TRI_0.1_2 TRI_0.1_3 TRI_0.2_1 TRI_0.2_2 TRI_0.2_3 TRI_0.3_1 TRI_0.3_2 TRI_0.3_3 TRI_0.4_1 TRI_0.4_2 TRI_0.4_3 TRI_0.5_1 TRI_0.5_2 TRI_0.5_3 TRI_0.6_1 TRI_0.6_2 TRI_0.6_3
- cd CATS_rb_comparison_sim_mut && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_sim_mut_rel_results" && cd ..
+ CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -t 20 -D CATS_rb_comparison_cont_sim_mut "../../../ref_genomes/${ref_genome}" 21_30_0.005_RSP 21_30_0.005_TRI RSP_0.1_1 RSP_0.1_2 RSP_0.1_3 RSP_0.2_1 RSP_0.2_2 RSP_0.2_3 RSP_0.3_1 RSP_0.3_2 RSP_0.3_3 RSP_0.4_1 RSP_0.4_2 RSP_0.4_3 RSP_0.5_1 RSP_0.5_2 RSP_0.5_3 RSP_0.6_1 RSP_0.6_2 RSP_0.6_3 TRI_0.1_1 TRI_0.1_2 TRI_0.1_3 TRI_0.2_1 TRI_0.2_2 TRI_0.2_3 TRI_0.3_1 TRI_0.3_2 TRI_0.3_3 TRI_0.4_1 TRI_0.4_2 TRI_0.4_3 TRI_0.5_1 TRI_0.5_2 TRI_0.5_3 TRI_0.6_1 TRI_0.6_2 TRI_0.6_3
+ cd CATS_rb_comparison_cont_sim_mut && mv CATS_rb_main_comparison_results.tsv "${species}_CATS_rb_cont_sim_mut_rel_results" && cd ..
  cd ..
 done
 cd ../../
@@ -617,13 +693,11 @@ do
   cat "${transcriptome}_kallisto_log" | grep "fragment length:" | cut -d ':' -f2- | xargs > frag_length_file
   FRAG_LENGTH="$(< frag_length_file)"
   rsem-eval-calculate-score --seed 100 -p 20 --paired-end --transcript-length-parameters parameter_file ../reads1_val_1.fq ../reads2_val_2.fq "../${transcriptome}" "${transcriptome}_rsem" "${FRAG_LENGTH}"
-  cut -f 2 "${transcriptome}_rsem.score" | head -n 1 > "${transcriptome}_rsem_eval_assembly_score"
   cut -f 1,9 "${transcriptome}_rsem.score.isoforms.results" > "${transcriptome}_rsem_eval_transcript_scores"
   cd ..
 
   echo "Running TransRate on ${transcriptome}"
   transrate --assembly="${transcriptome}" --left=reads1_val_1.fq --right=reads2_val_2.fq --threads=20 --output="${transcriptome}_transrate"
-  cut -d "," -f 37 "${transcriptome}_transrate/assemblies.csv" | tail -n +2 > "${transcriptome}_transrate/${transcriptome}_transrate_assembly_score"
   cut -d "," -f 1,16,15,17,18,9 "${transcriptome}"_transrate/pub*/contigs.csv > "${transcriptome}_transrate/${transcriptome}_transrate_transcript_scores"
  done
  cd ..
@@ -672,42 +746,37 @@ do
  do
   find "${dir}" -type d -name "*CATS_rb_map" -exec ln -s {} . \;
  done
+ echo "Running CATS-rb on comparison on on the public dataset (per-library)"
  for name in pub*_SRR*
  do
   new_name="$(echo "${name}" | sed -E 's/.*(SRR[0-9]+)_(SOA|TRI|RSP|IDB)_CATS_rb_map/\1_\2/')"
   mv "${name}" "${new_name}"
  done
- mv *CATS_rb_map ref
+ mv *CATS_rb_map REF
  sra_ids="$(ls | grep SRR | sed 's/_.*//')"
  for sra_id in "${sra_ids[@]}"
  do
-  CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -F "../../../ref_annotation/${ref_annotation}" -t 20 -D CATS_rb_comparison_pub "../../../ref_genomes/${ref_genome}" "${sra_id}_RSP" "${sra_id}_TRI" "${sra_id}_IDB" "${sra_id}_SOA" ref
-  cd CATS_rb_comparison_pub && mv CATS_rb_main_comparison_results.tsv "${species}_${sra_id}_CATS_rb_pub_rel_results" && mv CATS_rb_annotation_based_analysis_results.tsv "${species}_${sra_id}_CATS_rb_pub_annot_results" && cd ..
+  CATS_rb_compare -p "${min_exon_id_prop}" -e 30 -i "${max_intron_len}" -l "${min_exon_set_len}" -L "${min_tr_set_len}" -m "${max_tr_set_len}" -d 600 -f "${num_longest_scaff}" -B "${num_genomic_bins}" -H 2000 -F "../../../ref_annotation/${ref_annotation}" -t 20 -D CATS_rb_comparison_pub_"${sra_id}" "../../../ref_genomes/${ref_genome}" REF "${sra_id}_RSP" "${sra_id}_TRI" "${sra_id}_IDB" "${sra_id}_SOA"
+  cd CATS_rb_comparison_pub_"${sra_id}" && mv CATS_rb_main_comparison_results.tsv "${species}_${sra_id}_CATS_rb_pub_rel_results" && mv CATS_rb_annotation_based_analysis_results.tsv "${species}_${sra_id}_CATS_rb_pub_annot_results" && cd ..
  done
  cd ..
 done
 cd ../../
 
-#Preparing for R analysis: CATS-rf simulated and public assemblies (Figure 2)
+#Preparing for R analysis: CATS-rf controlled simulated, realistically simulated, and public assemblies (Figure 2)
 mkdir figure_2_data && cd figure_2_data
 
 #Linking CATS-rf transcript scores of simulated assemblies
-find ../simulated_data -type f -name "sim_*_CATS_rf_transcript_scores.tsv" -exec ln -s {} . \;
+find ../simulated_data -type f -name "*sim_*_CATS_rf_transcript_scores.tsv" -exec ln -s {} . \;
 
 #Linking RSEM-EVAL transcript scores of simulated assemblies
-find ../simulated_data -type f -name "sim_*_rsem_eval_transcript_scores" -exec ln -s {} . \;
+find ../simulated_data -type f -name "*sim_*_rsem_eval_transcript_scores" -exec ln -s {} . \;
 
 #Linking TransRate transcript scores of simulated assemblies
-find ../simulated_data -type f -name "sim_*_transrate_transcript_scores" -exec ln -s {} . \;
-
-#Linking RSEM-EVAL assembly scores of simulated assemblies
-find ../simulated_data -type f -name "sim_*_rsem_eval_assembly_score" -exec ln -s {} . \;
-
-#Linking TransRate assembly scores of simulated assemblies
-find ../simulated_data -type f -name "sim_*_transrate_assembly_score" -exec ln -s {} . \;
+find ../simulated_data -type f -name "*sim_*_transrate_transcript_scores" -exec ln -s {} . \;
 
 #Linking transcript F-scores of simulated assemblies
-find ../simulated_data -type f -name "sim_*_f_scores" -exec ln -s {} . \;
+find ../simulated_data -type f -name "*sim_*_f_scores" -exec ln -s {} . \;
 
 #Linking CATS-rf transcript scores of public assemblies
 find ../public_data -type f -name "pub*_*_CATS_rf_transcript_scores.tsv" -exec ln -s {} . \;
@@ -732,15 +801,15 @@ cd ..
 mkdir figure_3_data && cd figure_3_data
 
 #Linking CATS-rf transcript scores of mutated simulated assemblies. Merging transcript scores into a single table
-find ../simulated_data -type f -name "sim_*_21_30_0.005_{RSP,TRI}_CATS_rf_mut_*_transcript_scores.tsv" -exec ln -s {} . \;
+find ../simulated_data -type f -name "controlled_sim_*_21_30_0.005_1_12345_{RSP,TRI}_CATS_rf_mut_*_transcript_scores.tsv" -exec ln -s {} . \;
 echo -e "transcript\tcats_rf_coverage_component\tcats_rf_accuracy_component\tcats_rf_local_fidelity_component\tcats_rf_integrity_component\tcats_rf_transcript_score\tassembly" > simulated_mutated_assemblies_CATS_rf_transcript_scores
-for file in sim_*_21_30_0.005_{RSP,TRI}_CATS_rf_mut_*_transcript_scores.tsv
+for file in controlled_sim_*_21_30_0.005_1_12345_{RSP,TRI}_CATS_rf_mut_*_transcript_scores.tsv
 do
  tail -n +2 "${file}" | awk -v fname="${file}" -F'\t' 'BEGIN{OFS="\t"} {print $0, fname}' >> simulated_mutated_assemblies_CATS_rf_transcript_scores
 done
 
-find ../simulated_data -type f -name "sim_*_21_30_0.005_{RSP,TRI}_CATS_rf_transcript_scores.tsv" -exec ln -s {} . \;
-for file in sim_*_21_30_0.005_{RSP,TRI}_CATS_rf_transcript_scores.tsv
+find ../simulated_data -type f -name "controlled_sim_*_21_30_0.005_1_12345_{RSP,TRI}_CATS_rf_transcript_scores.tsv" -exec ln -s {} . \;
+for file in controlled_sim_*_21_30_0.005_1_12345_{RSP,TRI}_CATS_rf_transcript_scores.tsv
 do
  tail -n +2 "${file}" | awk -v fname="${file}" -F'\t' 'BEGIN{OFS="\t"} {print $0, fname}' >> simulated_native_assemblies_CATS_rf_transcript_scores
 done
@@ -751,12 +820,12 @@ cat simulated_mutated_assemblies_CATS_rf_transcript_scores simulated_native_asse
 generate_fig3_elements.R
 cd ..
 
-#Preparing for R analysis: CATS-rb simulated and public assemblies (Figure 5)
+#Preparing for R analysis: CATS-rb controlled simulated, realistically simulated, and public assemblies (Figure 5)
 mkdir figure_5_data && cd figure_5_data
 
-#Linking CATS-rb scores of simulated assemblies
-find ../simulated_data -type f -name "*_CATS_rb_sim_rel_results*" -exec ln -s {} . \;
-find ../simulated_data -type f -name "*_CATS_rb_sim_annot_results" -exec ln -s {} . \;
+#Linking CATS-rb scores of controlled simulated and realistically simulated assemblies
+find ../simulated_data -type f -name "*sim_rel_results*" -exec ln -s {} . \;
+find ../simulated_data -type f -name "*sim_annot_results" -exec ln -s {} . \;
 
 #Linking CATS-rb scores of mutated simulated assemblies
 find ../simulated_data -type f -name "*_CATS_rb_sim_mut_rel_results" -exec ln -s {} . \;
@@ -776,44 +845,65 @@ do
  sed -n '1p;6p;11p' "${file}" | cut -f2- > "${file}.tmp" && mv "${file}.tmp" "${file}"
 done
 
-#Renaming public assemblies
+#Renaming realistically simulated assemblies
 HEADER="REF\tRSP\tTRI\tIDB\tSOA"
+for file in *_CATS_rb_real_sim*_results_lib
+do
+ sed -i "1s/.*/${HEADER}/" "${file}"
+ sed -i 's/^[^\t]*\t//' "${file}"
+done
+
+#Renaming public assemblies
 for file in *_CATS_rb_pub_*
 do
  sed -i "1s/.*/${HEADER}/" "${file}"
+ sed -i 's/^[^\t]*\t//' "${file}"
 done
 
 #Combining the linked CATS-rb results into a single table
 merge_cats_rb_results.R
 
-#Linking CATS-rf assembly score and transcript F-score mean table (from Figure 2)
-ln -s ../figure_2_data/simulated_cats_rf_f_results_for_figure5.tsv
+#Linking CATS-rf assembly score and transcript F-score mean table (from Figure 2 R script)
+ln -s ../figure_2_data/controlled_simulated_assembly_cats_rf_f_scores_for_figure5.tsv
 
 #Generating Figure 5 elements
 generate_fig5_elements.R
 cd ..
 
-#Preparing for R analysis: CATS-rb reference chimeric transcripts (Extended data figure 7)
-mkdir extended_data_figure_7_data && cd extended_data_figure_7_data
+#Preparing for R analysis: CATS-rb reference chimeric transcripts (Supplementary figure 10)
+mkdir supplementary_figure_10_data && cd supplementary_figure_10_data
 find ../ref_transcriptomes/chimerism -type f -name "*_chimerism_*names" -exec ln -s {} . \;
 find ../ref_transcriptomes/chimerism -type f -name "*str_inconsistent_transcripts.tsv" -exec ln -s {} . \;
 
 #Merging transcript names into a single table
-echo -e "transcript\tsource_file" > chimeric_ref_transcriptome_names_for_figure_ext7
+echo -e "transcript\tsource_file" > chimeric_ref_transcriptome_names_for_supp_figure10.tsv
 for file in *_chimerism_*names
 do
- cat "${file}" | awk -v fname="${file}" -F'\t' 'BEGIN{OFS="\t"} {print $0, fname}' >> chimeric_ref_transcriptome_names_for_figure_ext7
+ cat "${file}" | awk -v fname="${file}" -F'\t' 'BEGIN{OFS="\t"} {print $0, fname}' >> chimeric_ref_transcriptome_names_for_supp_figure10.tsv
 done
 
 #Merging structurally inconsistent transcript lists into a single table
-echo -e "transcript\tsource_file" > str_inconsistent_transcripts_for_figure_ext7
+echo -e "transcript\tsource_file" > str_inconsistent_transcripts_for_supp_figure10.tsv
 for file in *str_inconsistent_transcripts.tsv
 do
- cut -f 1 "${file}" | tail -n +2 | awk -v fname="${file}" -F'\t' 'BEGIN{OFS="\t"} {print $0, fname}' >> str_inconsistent_transcripts_for_figure_ext7
+ cut -f 1 "${file}" | tail -n +2 | awk -v fname="${file}" -F'\t' 'BEGIN{OFS="\t"} {print $0, fname}' >> str_inconsistent_transcripts_for_supp_figure10.tsv
 done
 
-#Generating Extended data figure 7
-generate_fig_ext7.R
+#Generating Supplementary figure 10
+generate_supp_fig10.R
+cd ..
+
+#Preparing for R analysis: Transcript-level coverage in realstically simulated libraries (Supplementary Figure 11)
+cd supplementary_figure_11_data
+find . -type f -name "*coverage_table.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} {n=split(FILENAME,a,"/"); print $2, a[n]}' {} + > coverage_table_for_supp_fig11.tsv
+
+for file in ../../ref_transcriptomes/*.fa
+do
+ echo -e "$(basename "${file}")\t$(grep -c '^>' "${file}")"
+done > ref_tr_size_for_supp_fig11.tsv
+
+#Generating Supplementary figure 11
+generate_supp_fig11.R
 cd ..
 
 exit 0

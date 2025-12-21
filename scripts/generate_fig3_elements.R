@@ -11,6 +11,9 @@ suppressPackageStartupMessages(library(ggbiplot))
 mut_analysis_transcript_scores <- fread("mutation_analysis_CATS_rf_transcript_scores_for_figure3.tsv")
 
 #Extracting mutation type
+mut_analysis_transcript_scores[, "assembly" := sub("controlled_", "", assembly, fixed = T)]
+mut_analysis_transcript_scores[, "assembly" := sub("_1_12345", "", assembly, fixed = T)]
+
 mut_analysis_transcript_scores[grepl("mut_ins", assembly, fixed = T), "mut_type" := "Insertion"]
 mut_analysis_transcript_scores[grepl("mut_mis", assembly, fixed = T), "mut_type" := "Mismatch"]
 mut_analysis_transcript_scores[grepl("mut_del", assembly, fixed = T), "mut_type" := "Deletion"]

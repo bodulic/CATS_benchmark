@@ -12,6 +12,6 @@ asm_flags=3
 #minimum aligned length to contigs for a reliable read location (at least 32 for short insert size)
 map_len=32
 #fasta file for read 1 
-f1=sample_01_1_triv_header.fasta
+f1=sample_01_1_triv_header.fa
 #fasta file for read 2
-f2=sample_01_2_triv_header.fasta
+f2=sample_01_2_triv_header.fa

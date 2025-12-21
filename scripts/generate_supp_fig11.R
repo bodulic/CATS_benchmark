@@ -7,15 +7,15 @@ suppressPackageStartupMessages(library(ggplot2))
 #Importing transcript-level coverage from file
 transcript_coverages <- fread("coverage_table_for_supp_fig11.tsv")
 setnames(transcript_coverages, c("coverage", "assembly"))
-transcript_coverages[, "assembly" := sub("realistic_sim_", "", assembly)]
-transcript_coverages[, "assembly" := sub("_coverage_table.tsv", "", assembly)]
+transcript_coverages[, "assembly" := sub("realistic_sim_", "", assembly, fixed = T)]
+transcript_coverages[, "assembly" := sub("_coverage_table.tsv", "", assembly, fixed = T)]
 
 #Importing the total number of reference transcripts from file
 ref_tr_size_dt <- fread("ref_tr_size_for_supp_fig11.tsv")
 setnames(ref_tr_size_dt, c("species", "ref_tr_N_total"))
 ref_tr_size_dt[, "species" := sub("^(([^_]*_){1}[^_]*)_.*$", "\\1", species)]
 
-#Calculating the number of completely uncovered reference transcripts
+#Calculating the number of unexpressed reference transcripts
 lib_N_total <- transcript_coverages[, .("tr_N_total" = .N), by = "assembly"]
 lib_N_total[, "species" := sub("^(([^_]*_){1}[^_]*)_.*$", "\\1", assembly)]
 lib_N_total <- merge(lib_N_total, ref_tr_size_dt, by = "species")

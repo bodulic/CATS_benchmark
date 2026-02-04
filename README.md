@@ -54,25 +54,27 @@ The pipeline was run on a high-performance computing cluster using SUSE Linux En
 
 This repository contains the following scripts:
 
-| **Script**                      | **Purpose**                                                 |        
-|---------------------------------|-------------------------------------------------------------|
-| `CATS_benchmark.bash`           | Master script for the analysis                              |
-| `simulate_reads.R`              | Performs RNA-seq library simulation                         |
-| `get_f_scores_from_crb_table.R` | Calculated transcript F-scores from CRB-BLAST results       |
-| `simulate_insertion.R`          | Simulates insertions in transcript sequences                |
-| `simulate_mismatch.R`           | Simulates mismatches in transcript sequences                |
-| `simulate_deletion.R`           | Simulates deletions in transcript sequences                 |
-| `simulate_redundancy.R`         | Simulates redundancy in transcript sequences                |
-| `simulate_fragmentation.R`      | Simulates fragmentation in transcript sequences             |
-| `simulate_chimerism.R`          | Simulates chimerism in transcript sequences                 |
-| `filter_by_blat.R`              | Filters public transcripts by F-scores obtained by blat     |
-| `merge_cats_rf_results.R`       | Merges all CATS-rf results for Figure 2                     |
-| `generate_fig2_elements.R`      | Generates all Figure 2 panels and Supplementary figures 1-3 |
-| `generate_fig3_elements.R`      | Generates Figure 3 panels                                   |
-| `merge_cats_rb_results.R`       | Merges all CATS-rb results for Figure 5                     |
-| `generate_fig5_elements.R`      | Generates Figure 5 panels and Supplementary figures 4-9     |
-| `generate_supp_fig10.R`         | Generates Supplementary Figure 10                           |
-| `generate_supp_fig11.R`         | Generates Supplementary Figure 11                           |
+| **Script**                          | **Purpose**                                                 |        
+|-------------------------------------|-------------------------------------------------------------|
+| `CATS_benchmark.bash`               | Master script for the analysis                              |
+| `simulate_reads.R`                  | Performs RNA-seq library simulation                         |
+| `get_f_scores_from_crb_table.R`     | Calculated transcript F-scores from CRB-BLAST results       |
+| `simulate_insertion.R`              | Simulates insertions in transcript sequences                |
+| `simulate_mismatch.R`               | Simulates mismatches in transcript sequences                |
+| `simulate_deletion.R`               | Simulates deletions in transcript sequences                 |
+| `simulate_redundancy.R`             | Simulates redundancy in transcript sequences                |
+| `simulate_fragmentation.R`          | Simulates fragmentation in transcript sequences             |
+| `simulate_chimerism.R`              | Simulates chimerism in transcript sequences                 |
+| `generate_grid_search_parameters.R` | Performs random grid search for CATS-rf parameters          |
+| `filter_by_blat.R`                  | Filters public transcripts by F-scores obtained by blat     |
+| `merge_cats_rf_results.R`           | Merges all CATS-rf results for Figure 2                     |
+| `generate_fig2_elements.R`          | Generates all Figure 2 panels and Supplementary figures 1-3 |
+| `generate_fig3_elements.R`          | Generates Figure 3 panels                                   |
+| `merge_cats_rb_results.R`           | Merges all CATS-rb results for Figure 5                     |
+| `generate_fig5_elements.R`          | Generates Figure 5 panels and Supplementary figures 4-9     |
+| `generate_supp_fig10.R`             | Generates Supplementary Figure 10                           |
+| `generate_supp_fig11.R`             | Generates Supplementary Figure 11                           |
+| `generate_supp_fig12.R`             | Generates Supplementary Figure 12                           |
 
 The repository also contains configfiles for SOAPdenovo-Trans runs for simulated (`soap_configfile_simulated`) and public (`soap_configfile_public`) libraries.
 
@@ -92,11 +94,11 @@ For convenience, tables containing benchmark results used in figure generation a
 | `merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv`                   | Figure 5i                         | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv.gz)                   |
 | `chimeric_ref_transcriptome_names_for_supp_figure10.tsv`                             | Supp. Figure 10                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_supp_figure10.tsv.gz)                             |
 | `str_inconsistent_transcripts_for_supp_figure10.tsv`                                 | Supp. Figure 10                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_supp_figure10.tsv.gz)                                 |
-| `coverage_table_for_supp_figure11.tsv`                                               | Supp. Figure 11                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/coverage_table_for_supp_figure11.tsv.gz)                                               |
-| `ref_tr_size_for_supp_figure11.tsv`                                                  | Supp. Figure 11                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/ref_tr_size_for_supp_figure11.tsv.gz)                                                  |
+| `cats_rf_transcript_scores_for_supp_fig11.tsv`                                       | Supp. Figure 11                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/cats_rf_transcript_scores_for_supp_fig11.tsv.gz)                                       |
+| `transcript_f_scores_supp_fig11.tsv                `                                 | Supp. Figure 11                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/transcript_f_scores_supp_fig11.tsv.gz)                                                 |
+| `coverage_table_for_supp_figure12.tsv`                                               | Supp. Figure 12                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/coverage_table_for_supp_figure12.tsv.gz)                                               |
+| `ref_tr_size_for_supp_figure12.tsv`                                                  | Supp. Figure 12                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/ref_tr_size_for_supp_figure12.tsv.gz)                                                  |
 
 Tables should be unzipped before being directly supplied to the corresponding R scripts.
 
-If the files are not directly accessible via the provided links, they are available in the following [folder](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables). 
-
-The tables have also been deposited to Zenodo (10.5281/zenodo.16837971).
+If the files are not directly accessible via the provided links, they are available in the following [folder](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables).

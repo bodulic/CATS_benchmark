@@ -102,3 +102,5 @@ For convenience, tables containing benchmark results used in figure generation a
 Tables should be unzipped before being directly supplied to the corresponding R scripts.
 
 If the files are not directly accessible via the provided links, they are available in the following [folder](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables).
+
+The tables have also been deposited to Zenodo (10.5281/zenodo.18020437)

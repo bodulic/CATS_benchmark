@@ -33,7 +33,7 @@ cats_rf_tr_scores[, "filename" := sub("(_RSP).*", "\\1", filename)]
 cats_rf_tr_scores <- merge(cats_rf_tr_scores, tr_f_scores, by = c("transcript", "filename"))
 cats_rf_tr_scores[, "cov_params" := paste(k, z, e, w, sep = "_")]
 cats_rf_tr_scores[, "acc_params" := paste(K, Z, E, sep = "_")]
-cats_rf_tr_scores[, "le_params" := paste(x, X, c, sep = "_")]
+cats_rf_tr_scores[, "lf_params" := paste(x, X, c, sep = "_")]
 cats_rf_tr_scores[, "int_params" := paste(a, b, sep = "_")]
 
 #Calculating and plotting the correlation between coverage score component and F-scores
@@ -77,11 +77,11 @@ acc_comp_plot <- ggplot(data = cats_rf_tr_scores_acc, aes(x = reorder(acc_params
  theme(plot.title = element_text(size = 6)) 
 
 #Calculating and plotting the correlation between local error score component and F-scores
-cats_rf_tr_scores_loc <- cats_rf_tr_scores[, .("cor_coef" = cor(local_fidelity_score_component, f_score, method = "spearman", use = "pairwise.complete.obs")), by = c("filename", "le_params", "x")]
-x_axis_face <-  unique(cats_rf_tr_scores_loc[order(x), le_params])
+cats_rf_tr_scores_loc <- cats_rf_tr_scores[, .("cor_coef" = cor(local_fidelity_score_component, f_score, method = "spearman", use = "pairwise.complete.obs")), by = c("filename", "lf_params", "x")]
+x_axis_face <-  unique(cats_rf_tr_scores_loc[order(x), lf_params])
 x_axis_face <- fifelse(x_axis_face=="8_10_5", "bold", "plain")
 
-le_comp_plot <- ggplot(data = cats_rf_tr_scores_loc, aes(x = reorder(le_params, x), y = cor_coef)) +
+lf_comp_plot <- ggplot(data = cats_rf_tr_scores_loc, aes(x = reorder(lf_params, x), y = cor_coef)) +
  geom_boxplot(width = 0.8, size = 0.2, alpha = 0.4, fill = "#00A087FF", color ="grey40", outlier.shape = NA) +
  geom_jitter(size = 0.001, color = "#00A087FF", alpha = 0.5) +
  theme_minimal() +
@@ -117,5 +117,5 @@ int_comp_plot <- ggplot(data = cats_rf_tr_scores_int, aes(x = reorder(int_params
  theme(plot.title = element_text(size = 6)) 
 
 #Plotting Supplementary Figure 11 (Correlation between transcript score components and F-scores across different CATS-rf parameter combinations)
-supp_fig11 <- plot_grid(cov_comp_plot, acc_comp_plot, le_comp_plot, int_comp_plot, nrow = 2, align = "hv")
+supp_fig11 <- plot_grid(cov_comp_plot, acc_comp_plot, lf_comp_plot, int_comp_plot, nrow = 2, align = "hv")
 ggsave(supp_fig11, file = "Supplementary_Figure_11.tiff", height = 3, width = 4, dpi = 600, bg = "white")

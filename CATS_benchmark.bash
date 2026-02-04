@@ -915,7 +915,7 @@ cd ..
 #Preparing for R analysis: Random grid search analysis of CATS-rf parameter robustness (Supplementary figure 11)
 mkdir supplementary_figure_11_data && cd supplementary_figure_11_data
 find ../simulated_data -type f -name "*_CATS_rf_param_res_transcript_scores.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + > cats_rf_transcript_scores_for_supp_fig11.tsv
-find ../simulated_data -type f -name "realistic_sim_*[1-4]_RSP_f_scores" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + > transcript_f_scores_supp_fig11.tsv
+find ../simulated_data -type f -name "realistic_sim_*[1-4]_RSP_f_scores" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + | cut -f 1,10,11 > transcript_f_scores_supp_fig11.tsv
 
 #Generating Supplementary figure 11
 generate_supp_fig11.R

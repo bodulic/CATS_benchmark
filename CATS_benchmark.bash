@@ -1,5 +1,5 @@
 #!/bin/bash
-#Master script for the analysis performed in the paper "Comprehensive Transcriptome Quality Assessment Using CATS: Reference-free and Reference-based Approaches" (Bodulić and Vlahoviček, 2025)
+#Master script for the analysis performed in the paper "Comprehensive Transcriptome Quality Assessment Using CATS: Reference-free and Reference-based Approaches" (Bodulić and Vlahoviček, 2026)
 
 #Downloading reference protein-coding and non-coding transcripts from Ensembl
 declare -A transcriptome_urls
@@ -100,7 +100,7 @@ coverage_levels=("1_4" "5_10" "11_20" "21_30" "31_40" "41_50" "51_100")
 mismatch_rates=(0.005 0.01 0.02)
 
 mkdir simulated_data && cd simulated_data
-ref_transcriptomes="$(ls -tr ../ref3/*)"
+ref_transcriptomes="$(ls -tr ../ref_transcriptomes/*)"
 for ref_transcriptome in ${ref_transcriptomes}
 do
  ref_transcriptome_name="$(basename "${ref_transcriptome}")"
@@ -158,8 +158,8 @@ elif [[ "${ref_transcriptome}" == *h_sapiens* ]]
 done
 
 rm *tmp_transcriptome.fasta
-mkdir supplementary_figure_11_data
-mv *coverage_table.tsv supplementary_figure_11_data
+mkdir ../supplementary_figure_12_data
+mv *coverage_table.tsv ../supplementary_figure_12_data
 
 #Assembling simulated libraries with rnaSPAdes, Trinity, IDBA-tran, and SOAPdenovo-Trans
 for dir in *sim_*
@@ -187,7 +187,7 @@ do
  mv "${outdir}/contig.fa" "${dir}_IDB"
 
  echo "Assembling ${dir} with SOAPdenovo-Trans"
- /common/WORK/kbodulic/programi/SOAPdenovo-Trans/SOAPdenovo-Trans-31mer all -s ../../soap_configfile_simulated -p 20 -o "${dir}_soap"
+ SOAPdenovo-Trans-31mer all -s ../../soap_configfile_simulated -p 20 -o "${dir}_soap"
  mv "${dir}_soap.scafSeq" "${dir}_SOA"
 
  cd ..
@@ -331,6 +331,25 @@ do
    done
   done
   cd ../../
+ done
+ cd ..
+done
+
+#Performing a random grid search analysis of CATS-rf parameter robustness
+generate_grid_search_parameters.R
+for dir in *sim_*_[1-4]
+do
+ cd "${dir}"
+ for transcriptome in *_RSP
+ do
+  mkdir "${transcriptome}_cats_rf_grid_search" && cd "${transcriptome}_cats_rf_grid_search"
+  while IFS= read -r cmd
+  do
+   echo "Running:"
+   echo "${cmd}"
+   eval "${cmd}"
+  done < ../../CATS_rf_grid_search_commands
+  cd ..
  done
  cd ..
 done
@@ -893,17 +912,26 @@ done
 generate_supp_fig10.R
 cd ..
 
-#Preparing for R analysis: Transcript-level coverage in realstically simulated libraries (Supplementary Figure 11)
-cd supplementary_figure_11_data
-find . -type f -name "*coverage_table.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} {n=split(FILENAME,a,"/"); print $2, a[n]}' {} + > coverage_table_for_supp_fig11.tsv
-
-for file in ../../ref_transcriptomes/*.fa
-do
- echo -e "$(basename "${file}")\t$(grep -c '^>' "${file}")"
-done > ref_tr_size_for_supp_fig11.tsv
+#Preparing for R analysis: Random grid search analysis of CATS-rf parameter robustness (Supplementary figure 11)
+mkdir supplementary_figure_11_data && cd supplementary_figure_11_data
+find ../simulated_data -type f -name "*_CATS_rf_param_res_transcript_scores.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + > cats_rf_transcript_scores_for_supp_fig11.tsv
+find ../simulated_data -type f -name "realistic_sim_*[1-4]_RSP_f_scores" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + > transcript_f_scores_supp_fig11.tsv
 
 #Generating Supplementary figure 11
 generate_supp_fig11.R
+cd ..
+
+#Preparing for R analysis: Transcript-level coverage in realstically simulated libraries (Supplementary Figure 12)
+cd supplementary_figure_12_data
+find . -type f -name "*coverage_table.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} {n=split(FILENAME,a,"/"); print $2, a[n]}' {} + > coverage_table_for_supp_fig12.tsv
+
+for file in ../ref_transcriptomes/*.fa
+do
+ echo -e "$(basename "${file}")\t$(grep -c '^>' "${file}")"
+done > ref_tr_size_for_supp_fig12.tsv
+
+#Generating Supplementary figure 12
+generate_supp_fig12.R
 cd ..
 
 exit 0

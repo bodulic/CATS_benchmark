@@ -2,6 +2,7 @@
 #Script for generating random grid search parameters for the analysis of CATS-rf parameter robustness
 #Loading the required packages
 suppressPackageStartupMessages(library(data.table))
+set.seed(12345)
 
 #Coverage score component parameter value definition
 k_values <- seq(from = 5, to = 30, by = 1)

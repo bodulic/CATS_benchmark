@@ -95,7 +95,7 @@ For convenience, tables containing benchmark results used in figure generation a
 | `chimeric_ref_transcriptome_names_for_supp_figure10.tsv`                             | Supp. Figure 10                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/chimeric_ref_transcriptome_names_for_supp_figure10.tsv.gz)                             |
 | `str_inconsistent_transcripts_for_supp_figure10.tsv`                                 | Supp. Figure 10                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/str_inconsistent_transcripts_for_supp_figure10.tsv.gz)                                 |
 | `cats_rf_transcript_scores_for_supp_fig11.tsv`                                       | Supp. Figure 11                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/cats_rf_transcript_scores_for_supp_fig11.tsv.gz)                                       |
-| `transcript_f_scores_supp_fig11.tsv                `                                 | Supp. Figure 11                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/transcript_f_scores_supp_fig11.tsv.gz)                                                 |
+| `transcript_f_scores_supp_fig11.tsv`                                                 | Supp. Figure 11                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/transcript_f_scores_supp_fig11.tsv.gz)                                                 |
 | `coverage_table_for_supp_figure12.tsv`                                               | Supp. Figure 12                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/coverage_table_for_supp_figure12.tsv.gz)                                               |
 | `ref_tr_size_for_supp_figure12.tsv`                                                  | Supp. Figure 12                   | [Download](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables/ref_tr_size_for_supp_figure12.tsv.gz)                                                  |
 
@@ -103,4 +103,4 @@ Tables should be unzipped before being directly supplied to the corresponding R 
 
 If the files are not directly accessible via the provided links, they are available in the following [folder](http://hex.bioinfo.hr/~kbodulic/CATS_benchmark_tables).
 
-The tables have also been deposited to Zenodo (10.5281/zenodo.18020437)
+The tables have also been deposited to Zenodo (10.5281/zenodo.18487818)

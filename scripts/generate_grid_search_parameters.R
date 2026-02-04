@@ -48,7 +48,7 @@ b_sample <- sample(b_values, size = 20, replace = T)
 parameter_dt <- as.data.table(cbind(k_sample, z_sample, e_sample, w_sample, K_sample, Z_sample, E_sample, x_sample, X_sample, c_sample, a_sample, b_sample))
 
 #Adding default parameters
-parameter_dt <- rbind(parameter_dt, list(10, 3, 0.5, 1.5, 10, 0.98, 0.1, 8, 10, 5, 7, 0.5))
+parameter_dt <- rbindlist(list(parameter_dt, list(10, 3, 0.5, 1.5, 10, 0.98, 0.1, 8, 10, 5, 7, 0.5)))
 
 #Constructing CATS-rf commands
 fmt <- function(x) {

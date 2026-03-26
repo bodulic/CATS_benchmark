@@ -782,8 +782,8 @@ do
 done
 cd ../../
 
-#Preparing for R analysis: CATS-rf controlled simulated, realistically simulated, and public assemblies (Figure 2)
-mkdir figure_2_data && cd figure_2_data
+#Preparing for R analysis: CATS-rf controlled simulated, realistically simulated, and public assemblies (Figure 2 and Figure 3)
+mkdir figures_2_3_data && cd figures_2_3_data
 
 #Linking CATS-rf transcript scores of simulated assemblies
 find ../simulated_data -type f -name "*sim_*_CATS_rf_transcript_scores.tsv" -exec ln -s {} . \;
@@ -812,12 +812,12 @@ find ../public_data -type f -name "pub_*_f_scores" -exec ln -s {} . \;
 #Combining the linked CATS-rf results into a single table
 merge_cats_rf_results.R
 
-#Generating Figure 2 elements
-generate_fig2_elements.R
+#Generating Figure 2 and Figure 3 elements
+generate_fig_2_3_elements.R
 cd ..
 
-#Preparing for R analysis: CATS-rf mutated simulated assemblies (Figure 3)
-mkdir figure_3_data && cd figure_3_data
+#Preparing for R analysis: CATS-rf mutated simulated assemblies (Figure 4)
+mkdir figure_4_data && cd figure_4_data
 
 #Linking CATS-rf transcript scores of mutated simulated assemblies. Merging transcript scores into a single table
 find ../simulated_data -type f -name "controlled_sim_*_21_30_0.005_1_12345_{RSP,TRI}_CATS_rf_mut_*_transcript_scores.tsv" -exec ln -s {} . \;
@@ -833,14 +833,14 @@ do
  tail -n +2 "${file}" | awk -v fname="${file}" -F'\t' 'BEGIN{OFS="\t"} {print $0, fname}' >> simulated_native_assemblies_CATS_rf_transcript_scores
 done
 
-cat simulated_mutated_assemblies_CATS_rf_transcript_scores simulated_native_assemblies_CATS_rf_transcript_scores | cut -f 7,1,2,3,4,5,6 > mutation_analysis_CATS_rf_transcript_scores_for_figure3.tsv
+cat simulated_mutated_assemblies_CATS_rf_transcript_scores simulated_native_assemblies_CATS_rf_transcript_scores | cut -f 7,1,2,3,4,5,6 > mutation_analysis_CATS_rf_transcript_scores_for_figure4.tsv
 
-#Generating Figure 3 elements
-generate_fig3_elements.R
+#Generating Figure 4 elements
+generate_fig4_elements.R
 cd ..
 
-#Preparing for R analysis: CATS-rb controlled simulated, realistically simulated, and public assemblies (Figure 5)
-mkdir figure_5_data && cd figure_5_data
+#Preparing for R analysis: CATS-rb controlled simulated, realistically simulated, and public assemblies (Figure 6 and Figure 7)
+mkdir figures_6_7_data && cd figures_6_7_data
 
 #Linking CATS-rb scores of controlled simulated and realistically simulated assemblies
 find ../simulated_data -type f -name "*sim_rel_results*" -exec ln -s {} . \;
@@ -883,10 +883,10 @@ done
 merge_cats_rb_results.R
 
 #Linking CATS-rf assembly score and transcript F-score mean table (from Figure 2 R script)
-ln -s ../figure_2_data/controlled_simulated_assembly_cats_rf_f_scores_for_figure5.tsv
+ln -s ../figures_2_3_data/controlled_simulated_assembly_cats_rf_f_scores_for_figure7.tsv
 
-#Generating Figure 5 elements
-generate_fig5_elements.R
+#Generating Figure 6 and Figure 7 elements
+generate_fig_6_7_elements.R
 cd ..
 
 #Preparing for R analysis: CATS-rb reference chimeric transcripts (Supplementary figure 10)
@@ -914,8 +914,8 @@ cd ..
 
 #Preparing for R analysis: Random grid search analysis of CATS-rf parameter robustness (Supplementary figure 11)
 mkdir supplementary_figure_11_data && cd supplementary_figure_11_data
-find ../simulated_data -type f -name "*_CATS_rf_param_res_transcript_scores.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + > cats_rf_transcript_scores_for_supp_fig11.tsv
-find ../simulated_data -type f -name "realistic_sim_*[1-4]_RSP_f_scores" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + | cut -f 1,10,11 > transcript_f_scores_supp_fig11.tsv
+find ../simulated_data -type f -name "*_CATS_rf_param_res_transcript_scores.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + > cats_rf_transcript_scores_for_supp_figure11.tsv
+find ../simulated_data -type f -name "realistic_sim_*[1-4]_RSP_f_scores" -exec awk -F'\t' 'BEGIN{OFS="\t"} FNR==1 && NR==1 {print $0,"filename"} FNR==1 {next} {n=split(FILENAME,a,"/"); print $0,a[n]}' {} + | cut -f 1,10,11 > transcript_f_scores_supp_figure11.tsv
 
 #Generating Supplementary figure 11
 generate_supp_fig11.R
@@ -923,12 +923,12 @@ cd ..
 
 #Preparing for R analysis: Transcript-level coverage in realstically simulated libraries (Supplementary Figure 12)
 cd supplementary_figure_12_data
-find . -type f -name "*coverage_table.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} {n=split(FILENAME,a,"/"); print $2, a[n]}' {} + > coverage_table_for_supp_fig12.tsv
+find . -type f -name "*coverage_table.tsv" -exec awk -F'\t' 'BEGIN{OFS="\t"} {n=split(FILENAME,a,"/"); print $2, a[n]}' {} + > coverage_table_for_supp_figure12.tsv
 
 for file in ../ref_transcriptomes/*.fa
 do
  echo -e "$(basename "${file}")\t$(grep -c '^>' "${file}")"
-done > ref_tr_size_for_supp_fig12.tsv
+done > ref_tr_size_for_supp_figure12.tsv
 
 #Generating Supplementary figure 12
 generate_supp_fig12.R

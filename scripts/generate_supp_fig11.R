@@ -24,7 +24,7 @@ for (i in 1 : length(parameter_values)) {
 cats_rf_tr_scores  <- cbind(cats_rf_tr_scores, as.data.table(parameter_matrix))
 
 #Importing transcript F-scores from files
-tr_f_scores <- fread("transcript_f_scores_supp_figure11.tsv")
+tr_f_scores <- fread("transcript_f_scores_for_supp_figure11.tsv")
 tr_f_scores[, "filename" := sub("_f_scores", "", filename)]
 colnames(tr_f_scores)[1] <- "transcript"
 

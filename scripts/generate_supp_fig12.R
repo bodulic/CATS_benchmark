@@ -5,13 +5,13 @@ suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(ggplot2))
 
 #Importing transcript-level coverage from file
-transcript_coverages <- fread("coverage_table_for_supp_fig12.tsv")
+transcript_coverages <- fread("coverage_table_for_supp_figure12.tsv")
 setnames(transcript_coverages, c("coverage", "assembly"))
 transcript_coverages[, "assembly" := sub("realistic_sim_", "", assembly, fixed = T)]
 transcript_coverages[, "assembly" := sub("_coverage_table.tsv", "", assembly, fixed = T)]
 
 #Importing the total number of reference transcripts from file
-ref_tr_size_dt <- fread("ref_tr_size_for_supp_fig12.tsv")
+ref_tr_size_dt <- fread("ref_tr_size_for_supp_figure12.tsv")
 setnames(ref_tr_size_dt, c("species", "ref_tr_N_total"))
 ref_tr_size_dt[, "species" := sub("^(([^_]*_){1}[^_]*)_.*$", "\\1", species)]
 

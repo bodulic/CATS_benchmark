@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-#Script for merging CATS-rb results from controlled simulated, realistically simulated, and public datasets (data for Figure 5)
+#Script for merging CATS-rb results from controlled simulated, realistically simulated, and public datasets (data for Figures 6 and 7)
 #Loading the required package
 suppressPackageStartupMessages(library(data.table))
 
@@ -28,7 +28,7 @@ col_names <- unlist(fread("h_sapiens_CATS_rb_cont_sim_rel_results1", header = F)
 colnames(cats_rb_cont_sim_assembly_table) <- c(col_names, "cats_rb_run", "metric")
 
 #Writing merged CATS-rb controlled simulated assembly scores to file
-write.table(cats_rb_cont_sim_assembly_table, file = "merged_cats_rb_controlled_simulated_assembly_scores_for_figure5.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
+write.table(cats_rb_cont_sim_assembly_table, file = "merged_cats_rb_controlled_simulated_assembly_scores_for_figures_6_7.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
 
 #Importing CATS-rb assembly scores of realistically simulated assemblies from files
 cats_rb_real_sim_assembly_table <- import_data(".*_CATS_rb_real_sim_rel_results")
@@ -47,7 +47,7 @@ col_names <- sub("600000", "4", col_names, fixed = T)
 colnames(cats_rb_real_sim_assembly_table) <- c(col_names, "cats_rb_run", "metric")
 
 #Writing merged CATS-rb realistically simulated assembly scores to file
-write.table(cats_rb_real_sim_assembly_table, file = "merged_cats_rb_realistically_simulated_assembly_scores_for_figure5.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
+write.table(cats_rb_real_sim_assembly_table, file = "merged_cats_rb_realistically_simulated_assembly_scores_for_figure6.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
 
 #Importing CATS-rb assembly scores of realistically simulated assemblies from files (per-library runs)
 cats_rb_real_sim_lib_assembly_table <- import_data(".*_CATS_rb_real_sim_(rel|annot)_results_lib")
@@ -59,7 +59,7 @@ cats_rb_real_sim_lib_assembly_table[, "cats_rb_run" := sub("_annot_results", "",
 cats_rb_real_sim_lib_assembly_table[, "cats_rb_run" := sub("_rel_results", "", cats_rb_run, fixed = T)]
 
 #Writing merged CATS-rb realistically simulated assembly scores to file (per-library runs)
-write.table(cats_rb_real_sim_lib_assembly_table, file = "merged_cats_rb_realistically_simulated_assembly_scores_per_library_for_figure5.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
+write.table(cats_rb_real_sim_lib_assembly_table, file = "merged_cats_rb_realistically_simulated_assembly_scores_per_library_for_figure6.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
 
 #Importing CATS-rb assembly scores of public assemblies from files
 cats_rb_pub_assembly_table <- import_data(".*_CATS_rb_pub_(rel|annot)_results")
@@ -71,7 +71,7 @@ cats_rb_pub_assembly_table[, "cats_rb_run" := sub("_annot_results", "", cats_rb_
 cats_rb_pub_assembly_table[, "cats_rb_run" := sub("_rel_results", "", cats_rb_run, fixed = T)]
 
 #Writing merged CATS-rb public assembly scores to file
-write.table(cats_rb_pub_assembly_table, file = "merged_cats_rb_public_assembly_scores_for_figure5.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
+write.table(cats_rb_pub_assembly_table, file = "merged_cats_rb_public_assembly_scores_for_figure6.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
 
 #Importing CATS-rb assembly scores of simulated mutated assemblies from files
 cats_rb_sim_mut_assembly_table <- import_data(".*_CATS_rb_sim_mut_rel_results")
@@ -81,4 +81,4 @@ cats_rb_sim_mut_assembly_table[, "metric" := rep(c("relative_exon_score", "relat
 cats_rb_sim_mut_assembly_table[, "cats_rb_run" := sub("_rel_results", "", cats_rb_run, fixed = T)]
 
 #Writing merged CATS-rb simulated mutated assembly scores to file
-write.table(cats_rb_sim_mut_assembly_table, file = "merged_cats_rb_simulated_mutated_assembly_scores_for_figure5.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)
+write.table(cats_rb_sim_mut_assembly_table, file = "merged_cats_rb_simulated_mutated_assembly_scores_for_figure6.tsv", sep = "\t", row.names =  F, col.names =  T, quote = F)

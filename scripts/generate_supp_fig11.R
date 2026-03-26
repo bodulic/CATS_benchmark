@@ -6,7 +6,7 @@ library(ggplot2)
 library(cowplot)
 
 #Importing CATS-rf transcript scores from files
-cats_rf_tr_scores <- fread("cats_rf_transcript_scores_for_supp_fig11.tsv")
+cats_rf_tr_scores <- fread("cats_rf_transcript_scores_for_supp_figure11.tsv")
 cats_rf_tr_scores[, "filename" := sub("_CATS_rf_param_res_transcript_scores.tsv", "", filename)]
 
 #Extracting parameter values from file names 
@@ -24,7 +24,7 @@ for (i in 1 : length(parameter_values)) {
 cats_rf_tr_scores  <- cbind(cats_rf_tr_scores, as.data.table(parameter_matrix))
 
 #Importing transcript F-scores from files
-tr_f_scores <- fread("transcript_f_scores_supp_fig11.tsv")
+tr_f_scores <- fread("transcript_f_scores_supp_figure11.tsv")
 tr_f_scores[, "filename" := sub("_f_scores", "", filename)]
 colnames(tr_f_scores)[1] <- "transcript"
 

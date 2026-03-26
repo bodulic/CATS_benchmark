@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-#Script for merging CATS-rf results from controlled simulated, realistically simulated, and public datasets (data for Figure 2)
+#Script for merging CATS-rf results from controlled simulated, realistically simulated, and public datasets (data for Figure 2 and Figure 3)
 #Loading the required package
 suppressPackageStartupMessages(library(data.table))
 
@@ -38,7 +38,7 @@ merged_cont_sim_transcript_table <- merge(merged_cont_sim_transcript_table, tran
 merged_cont_sim_transcript_table <- merge(merged_cont_sim_transcript_table, f_score_cont_sim_transcript_table, by = c("assembly", "transcript"))
 
 #Writing merged controlled simulated transcript scores to file
-write.table(merged_cont_sim_transcript_table, file = "merged_controlled_simulated_transcript_scores_for_figure2.tsv", sep = "\t", row.names = F, col.names = T, quote = F)
+write.table(merged_cont_sim_transcript_table, file = "merged_controlled_simulated_transcript_scores_for_figures_2_3.tsv", sep = "\t", row.names = F, col.names = T, quote = F)
 
 #Importing CATS-rf transcript scores of realistically simulated assemblies from files
 cats_rf_real_sim_transcript_table <- import_data("realistic_sim_.*_CATS_rf_transcript_scores.tsv")
@@ -62,7 +62,7 @@ merged_real_sim_transcript_table <- merge(merged_real_sim_transcript_table, tran
 merged_real_sim_transcript_table <- merge(merged_real_sim_transcript_table, f_score_real_sim_transcript_table, by = c("assembly", "transcript"))
 
 #Writing merged realistically simulated transcript scores to file
-write.table(merged_real_sim_transcript_table, file = "merged_realistically_simulated_transcript_scores_for_figure2.tsv", sep = "\t", row.names = F, col.names = T, quote = F)
+write.table(merged_real_sim_transcript_table, file = "merged_realistically_simulated_transcript_scores_for_figure3.tsv", sep = "\t", row.names = F, col.names = T, quote = F)
 
 #Importing CATS-rf transcript scores of public assemblies from files
 cats_rf_pub_transcript_table <- import_data("pub_.*_CATS_rf_transcript_scores.tsv")
@@ -86,4 +86,4 @@ merged_pub_transcript_table <- merge(merged_pub_transcript_table, transrate_pub_
 merged_pub_transcript_table <- merge(merged_pub_transcript_table, f_score_pub_transcript_table, by = c("assembly", "transcript"), all.x = T)
 
 #Writing merged public transcript scores to file
-write.table(merged_pub_transcript_table, file = "merged_public_transcript_scores_for_figure2.tsv", sep = "\t", row.names = F, col.names = T, quote = F)
+write.table(merged_pub_transcript_table, file = "merged_public_transcript_scores_for_figure3.tsv", sep = "\t", row.names = F, col.names = T, quote = F)

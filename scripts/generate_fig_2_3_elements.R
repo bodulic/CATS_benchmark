@@ -8,7 +8,7 @@ suppressPackageStartupMessages(library(ggcorrplot))
 suppressPackageStartupMessages(library(cowplot))
 
 #Importing merged controlled simulated transcript scores from file
-controlled_simulated_transcript_scores <- fread("merged_controlled_simulated_transcript_scores_for_figures_2_3.tsv")
+controlled_simulated_transcript_scores <- fread("merged_controlled_simulated_transcript_scores_for_figure2.tsv")
 
 #Extracting species names, coverage, mismatch rate, and assembler information
 controlled_simulated_transcript_scores[, "assembly" := sub("controlled_", "", assembly, fixed = T)]

@@ -38,7 +38,7 @@ merged_cont_sim_transcript_table <- merge(merged_cont_sim_transcript_table, tran
 merged_cont_sim_transcript_table <- merge(merged_cont_sim_transcript_table, f_score_cont_sim_transcript_table, by = c("assembly", "transcript"))
 
 #Writing merged controlled simulated transcript scores to file
-write.table(merged_cont_sim_transcript_table, file = "merged_controlled_simulated_transcript_scores_for_figures_2_3.tsv", sep = "\t", row.names = F, col.names = T, quote = F)
+write.table(merged_cont_sim_transcript_table, file = "merged_controlled_simulated_transcript_scores_for_figure2.tsv", sep = "\t", row.names = F, col.names = T, quote = F)
 
 #Importing CATS-rf transcript scores of realistically simulated assemblies from files
 cats_rf_real_sim_transcript_table <- import_data("realistic_sim_.*_CATS_rf_transcript_scores.tsv")
